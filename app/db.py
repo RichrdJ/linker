@@ -15,7 +15,7 @@ DEFAULT_SETTINGS = {
     "search_custom": "",
     "new_tab": "1",
     "theme": "auto",          # auto | dark | light | oled
-    "accent": "#f0b44c",
+    "accent": "#3b7ddd",      # zelfde blauw als het logo
     "show_clock": "1",
     "show_subtitle": "1",     # omschrijving of adres onder de naam
     "card_size": "normal",    # compact | normal
@@ -77,6 +77,9 @@ def init():
         # _add_column(conn, "links", "kolom", "TEXT NOT NULL DEFAULT ''")
         for k, v in DEFAULT_SETTINGS.items():
             conn.execute("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)", (k, v))
+        # 0.2.2: het oude gele standaardaccent wordt het blauw van het logo
+        conn.execute("UPDATE settings SET value = ? WHERE key = 'accent' AND value = '#f0b44c'",
+                     (DEFAULT_SETTINGS["accent"],))
         _seed(conn)
 
 

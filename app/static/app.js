@@ -19,7 +19,7 @@ const SVG = {
   plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
   az: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18 7.5 6 11 18M5.2 14h4.6M14 6h6l-6 12h6"/></svg>',
 };
-const SWATCHES = ["#f0b44c", "#3fb8af", "#5b9cf0", "#a38cf2", "#ec6f8e", "#5cc489", "#e8734a"];
+const SWATCHES = ["#3b7ddd", "#3fb8af", "#5cc489", "#a38cf2", "#ec6f8e", "#e8734a", "#f0b44c"];
 
 /* ================================================================ hulpjes */
 function esc(s) {

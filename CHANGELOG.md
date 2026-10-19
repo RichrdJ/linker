@@ -5,6 +5,14 @@ Versienummers volgen [Semantic Versioning](https://semver.org/lang/nl/): het mid
 
 Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt bij het opstarten automatisch bijgewerkt en je links blijven bewaard.
 
+## [0.2.2] - 2026-10-19
+
+### Gewijzigd
+- De standaard accentkleur is nu hetzelfde blauw als het logo, in plaats van geel. Dat geldt voor knoppen, de actieve categorie, de zoekbalk en selecties. Geel staat nog bij de keuzekleuren in *Instellingen → Thema*.
+
+### Migratie
+- Had je de gele standaardkleur, dan wordt die bij het opstarten automatisch blauw. Een zelf gekozen andere kleur blijft staan.
+
 ## [0.2.1] - 2026-10-19
 
 ### Gewijzigd
@@ -42,6 +50,7 @@ Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt
 - Installeerbaar als app (PWA).
 - Docker-image voor amd64 en arm64 via GitHub Actions, met PUID/PGID.
 
+[0.2.2]: https://github.com/RichrdJ/linker/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/RichrdJ/linker/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/RichrdJ/linker/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/RichrdJ/linker/releases/tag/v0.1.0
