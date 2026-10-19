@@ -107,9 +107,13 @@ button, input, select { font: inherit; color: inherit; }
 .search-glyph { position: absolute; left: 18px; top: 50%; width: 19px; height: 19px; transform: translateY(-50%); fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; pointer-events: none; }
 .slash { position: absolute; right: 14px; pointer-events: none; top: 50%; transform: translateY(-50%); min-width: 22px; padding: 0 6px; text-align: center; font: 12px/20px var(--font); color: var(--faint); border: 1px solid var(--line); border-radius: var(--radius-sm); }
 
-.clock { margin: 0 12px 0 0; display: flex; align-items: baseline; gap: 10px; color: var(--muted); white-space: nowrap; }
-.clock time { font-size: 22px; font-weight: 300; color: var(--fg); font-variant-numeric: tabular-nums; }
-.has-bg .clock { text-shadow: 0 1px 12px rgba(0, 0, 0, .5); }
+/* Klok rustig onderin de zijbalk, boven de knoppen */
+.clock { margin: 0; padding: 0 22px 12px; display: flex; flex-direction: column; gap: 1px; color: var(--faint); font-size: 12px; white-space: nowrap; overflow: hidden; }
+.clock time { font-size: 18px; font-weight: 300; color: var(--muted); font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+#date::first-letter { text-transform: uppercase; }
+.side-collapsed .clock { padding: 0 0 10px; align-items: center; }
+.side-collapsed .clock time { font-size: 13px; }
+.side-collapsed #date { display: none; }
 .search-hint { min-height: 18px; margin: 8px 4px 14px; font-size: 13px; color: var(--muted); }
 .search-hint b { color: var(--fg); font-weight: 600; }
 .search-hint kbd { font: 12px var(--font); padding: 0 5px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); }
@@ -117,6 +121,7 @@ button, input, select { font: inherit; color: inherit; }
 /* ------------------------------------------------ collectiekop */
 .col-head { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; min-height: 32px; }
 .col-tools { display: flex; align-items: center; gap: 2px; }
+body:not(.can-edit) .col-head { display: none; }   /* alleen + Sectie staat er nog, en dat is om te bewerken */
 
 /* Rustige knop zonder rand: alleen bij hover iets duidelijker */
 .ghost {
@@ -304,7 +309,7 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
 }
 
 /* Tekst direct op de achtergrondafbeelding: altijd licht, met schaduw */
-.has-bg .clock, .has-bg .clock time, .has-bg .section-name, .has-bg .search-hint,
+.has-bg .section-name, .has-bg .search-hint,
 .has-bg .search-hint b, .has-bg .col-head .mini, .has-bg .col-head .ghost { color: #fff; text-shadow: 0 1px 10px rgba(0, 0, 0, .6); }
 .has-bg .section-count, .has-bg .section-path, .has-bg .section-tools .mini { color: rgba(255, 255, 255, .7); }
 
