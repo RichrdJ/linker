@@ -148,10 +148,12 @@ function renderSidebar() {
   $("#collections").innerHTML = cols().map((c, i) => {
     const n = c.sections.reduce((sum, s) => sum + s.links.length, 0);
     const icon = state.settings.show_category_icons === "1" && c.icon ? esc(c.icon) : "";
+    // In de ingeklapte zijbalk: het icoon, of anders de eerste letter
+    const initial = esc([...c.name.trim()][0]?.toUpperCase() || "?");
     return `<li class="col-item" data-cid="${c.id}">
       <button type="button" class="col-btn" data-open="${c.id}" aria-current="${c.id === currentId}"
         title="${esc(c.name)}${i < 9 ? ` (Alt+${i + 1})` : ""}">
-        ${icon ? `<span class="col-icon" aria-hidden="true">${icon}</span>` : ""}
+        ${icon ? `<span class="col-icon" aria-hidden="true">${icon}</span>` : `<span class="col-initial" aria-hidden="true">${initial}</span>`}
         <span class="col-name">${esc(c.name)}</span>
         <span class="col-down" data-col-down="${c.id}" hidden></span>
         <span class="col-count">${n || ""}</span>
@@ -211,18 +213,34 @@ function afterBoard() {
   applyStatus();
 }
 
+/* Accentkleur overal: CSS, logo (via CSS) en het icoon in het browsertabblad */
+function faviconSVG(accent) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="${accent}"/><path d="M13.5 18.5l5-5M12 15l-2.5 2.5a3.5 3.5 0 0 0 5 5L17 20M15 12l2.5-2.5a3.5 3.5 0 0 1 5 5L20 17" fill="none" stroke="${inkFor(accent)}" stroke-width="2.6" stroke-linecap="round"/></svg>`;
+}
+function applyAccent(accent) {
+  const root = document.documentElement;
+  root.style.setProperty("--accent", accent);
+  root.style.setProperty("--accent-ink", inkFor(accent));
+  if (applyAccent.last === accent) return;
+  applyAccent.last = accent;
+  $("#favicon").href = "data:image/svg+xml," + encodeURIComponent(faviconSVG(accent));
+  const c = accent.slice(1);
+  $('link[rel="apple-touch-icon"]').href = `/icon-192.png?c=${c}`;
+  $('link[rel="manifest"]').href = `/manifest.webmanifest?c=${c}`;
+}
+
 function applySettings() {
   const s = state.settings;
   const root = document.documentElement;
   root.dataset.theme = s.theme;
   root.dataset.size = s.card_size;
-  root.style.setProperty("--accent", s.accent);
-  root.style.setProperty("--accent-ink", inkFor(s.accent));
+  applyAccent(s.accent);
   root.classList.toggle("has-bg", !!s.background);
   root.classList.toggle("bg-dim", s.background_dim === "1");
   root.style.setProperty("--bg-image", s.background ? `url("/background?v=${encodeURIComponent(s.background)}")` : "none");
   document.title = s.title;
   $("#title").textContent = s.title;
+  $("#logo").title = s.title;
   $("#clock").hidden = s.show_clock !== "1";
   applyAccess();
   tick();
@@ -230,7 +248,7 @@ function applySettings() {
 function applyAccess() {
   document.body.classList.toggle("can-edit", !!state.can_edit);
   $("#btn-lock").hidden = !state.locked;
-  $("#lock-label").textContent = state.can_edit ? "Vergrendelen" : "Ontgrendelen";
+  $("#lock-label").textContent = $("#btn-lock").title = state.can_edit ? "Vergrendelen" : "Ontgrendelen";
 }
 
 function openCollection(id) {
@@ -773,8 +791,7 @@ function previewLook() {
   const root = document.documentElement;
   root.dataset.theme = formSettings.theme.value;
   root.dataset.size = formSettings.card_size.value;
-  root.style.setProperty("--accent", formSettings.accent.value);
-  root.style.setProperty("--accent-ink", inkFor(formSettings.accent.value));
+  applyAccent(formSettings.accent.value);
   root.classList.toggle("bg-dim", formSettings.background_dim.checked);
 }
 ["accent"].forEach(n => formSettings[n].addEventListener("input", previewLook));
@@ -985,6 +1002,18 @@ resizer.addEventListener("keydown", e => {
   setSideWidth(sideWidth() + (e.key === "ArrowRight" ? 16 : -16));
 });
 resizer.setAttribute("aria-valuenow", String(Math.round(sideWidth())));
+
+/* ================================================================ zijbalk inklappen */
+const collapseBtn = $("#btn-collapse");
+function setCollapsed(on) {
+  document.documentElement.classList.toggle("side-collapsed", on);
+  collapseBtn.setAttribute("aria-expanded", String(!on));
+  collapseBtn.title = on ? "Zijbalk uitklappen" : "Zijbalk inklappen";
+  $("span", collapseBtn).textContent = on ? "Uitklappen" : "Inklappen";
+  try { localStorage.setItem("linker-sidebar-collapsed", on ? "1" : "0"); } catch { /* geen opslag */ }
+}
+collapseBtn.addEventListener("click", () => setCollapsed(!document.documentElement.classList.contains("side-collapsed")));
+setCollapsed(document.documentElement.classList.contains("side-collapsed"));
 
 /* ================================================================ start */
 applySettings();

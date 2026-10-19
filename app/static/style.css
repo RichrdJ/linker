@@ -56,10 +56,16 @@ button, input, select { font: inherit; color: inherit; }
 }
 .logo { display: flex; align-items: center; gap: 10px; padding: 20px 20px 18px; text-decoration: none; font-weight: 700; font-size: 17px; }
 .logo-mark {
-  width: 26px; height: 26px; border-radius: 7px; flex: none;
-  /* Vaste logokleur, los van de accentkleur */
-  background: #3b7ddd url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13.5 18.5l5-5M12 15l-2.5 2.5a3.5 3.5 0 0 0 5 5L17 20M15 12l2.5-2.5a3.5 3.5 0 0 1 5 5L20 17' fill='none' stroke='%23ffffff' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% no-repeat;
+  position: relative; width: 26px; height: 26px; border-radius: 7px; flex: none;
+  background: var(--accent);   /* volgt de accentkleur, net als het icoon in het tabblad */
 }
+.logo-mark::after {
+  content: ""; position: absolute; inset: 0; background: var(--accent-ink);
+  -webkit-mask: var(--logo-glyph) center / 100% no-repeat; mask: var(--logo-glyph) center / 100% no-repeat;
+}
+:root { --logo-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M13.5 18.5l5-5M12 15l-2.5 2.5a3.5 3.5 0 0 0 5 5L17 20M15 12l2.5-2.5a3.5 3.5 0 0 1 5 5L20 17' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E"); }
+#title { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 .collections { flex: 1; overflow-y: auto; padding: 4px 12px 12px; }
 .collections ul { list-style: none; margin: 0; padding: 0; }
@@ -103,14 +109,23 @@ button, input, select { font: inherit; color: inherit; }
 
 .clock { margin: 0 12px 0 0; display: flex; align-items: baseline; gap: 10px; color: var(--muted); white-space: nowrap; }
 .clock time { font-size: 22px; font-weight: 300; color: var(--fg); font-variant-numeric: tabular-nums; }
-.has-bg .clock, .has-bg .col-head h1 { text-shadow: 0 1px 12px rgba(0, 0, 0, .5); }
+.has-bg .clock { text-shadow: 0 1px 12px rgba(0, 0, 0, .5); }
 .search-hint { min-height: 18px; margin: 8px 4px 14px; font-size: 13px; color: var(--muted); }
 .search-hint b { color: var(--fg); font-weight: 600; }
 .search-hint kbd { font: 12px var(--font); padding: 0 5px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); }
 
 /* ------------------------------------------------ collectiekop */
 .col-head { display: flex; align-items: center; gap: 8px; margin: 6px 0 18px; min-height: 38px; }
-.col-head h1 { margin: 0; font-size: 24px; font-weight: 650; letter-spacing: -.01em; }
+.col-tools { display: flex; align-items: center; gap: 2px; }
+
+/* Rustige knop zonder rand: alleen bij hover iets duidelijker */
+.ghost {
+  display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 9px 0 7px;
+  background: none; border: 0; border-radius: var(--radius-sm); color: var(--faint); font-size: 13px; cursor: pointer;
+  opacity: .75; transition: opacity .12s, color .12s, background .12s;
+}
+.ghost svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.ghost:hover, .ghost:focus-visible { opacity: 1; color: var(--fg); background: var(--raised); }
 
 /* ------------------------------------------------ secties en kaarten */
 .section { margin-bottom: 28px; border-radius: var(--radius-lg); }
@@ -281,8 +296,8 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
 @media (max-width: 760px) { .card-actions .copy { display: none; } }
 
 /* Tekst direct op de achtergrondafbeelding: altijd licht, met schaduw */
-.has-bg .col-head h1, .has-bg .clock, .has-bg .clock time, .has-bg .section-name, .has-bg .search-hint,
-.has-bg .search-hint b, .has-bg .col-head .mini { color: #fff; text-shadow: 0 1px 10px rgba(0, 0, 0, .6); }
+.has-bg .clock, .has-bg .clock time, .has-bg .section-name, .has-bg .search-hint,
+.has-bg .search-hint b, .has-bg .col-head .mini, .has-bg .col-head .ghost { color: #fff; text-shadow: 0 1px 10px rgba(0, 0, 0, .6); }
 .has-bg .section-count, .has-bg .section-path, .has-bg .section-tools .mini { color: rgba(255, 255, 255, .7); }
 
 /* ------------------------------------------------ snelkoppelingen verzamelen */
@@ -310,11 +325,11 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
 .has-bg .add-inline { color: rgba(255, 255, 255, .7); }
 .add-card { font-size: 20px; text-align: center; color: var(--faint); }
 
-.side-kbd { margin-left: auto; font: 11px/18px var(--font); padding: 0 6px; border: 1px solid var(--line); border-radius: 4px; color: var(--faint); }
 .topbar + .col-head { margin-top: 10px; }
-@media (max-width: 760px) { .side-kbd { display: none; } }
+.mobile-only { display: none; }
+@media (max-width: 760px) { .mobile-only { display: flex; } }
 
-/* Potlood naast de categorienaam alleen bij hover (op touchscreens altijd zichtbaar) */
+/* Potlood voor de categorie alleen bij hover (op touchscreens altijd zichtbaar) */
 #edit-collection { opacity: 0; transition: opacity .12s; }
 .col-head:hover #edit-collection, #edit-collection:focus-visible { opacity: 1; }
 @media (hover: none) { #edit-collection { opacity: 1; } }
@@ -332,3 +347,21 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
 .resizer:focus-visible { outline: none; }
 .resizing, .resizing * { cursor: col-resize !important; user-select: none; }
 @media (max-width: 760px) { .resizer { display: none; } }
+
+/* Zijbalk ingeklapt: smalle strook met logo, iconen of beginletters en de knoppen onderin */
+.col-initial { display: none; }
+.side-collapsed #btn-collapse .chev { transform: rotate(180deg); transform-origin: 14px 12px; }
+@media (min-width: 761px) {
+  .side-collapsed .app { grid-template-columns: 64px 1fr; }
+  .side-collapsed .resizer, .side-collapsed #title, .side-collapsed .side-head,
+  .side-collapsed .col-name, .side-collapsed .col-count, .side-collapsed .side-btn span { display: none; }
+  .side-collapsed .logo { justify-content: center; padding: 20px 0 18px; }
+  .side-collapsed .collections { padding: 4px 10px 12px; }
+  .side-collapsed .col-btn { position: relative; justify-content: center; padding: 8px 0; }
+  .side-collapsed .col-icon { width: auto; font-size: 17px; }
+  .side-collapsed .col-initial { display: block; font-weight: 650; font-size: 14px; }
+  .side-collapsed .col-down { position: absolute; top: 6px; right: 6px; }
+  .side-collapsed .sidebar-foot { padding: 10px 10px 14px; }
+  .side-collapsed .side-btn { justify-content: center; padding: 8px 0; }
+}
+@media (max-width: 760px) { #btn-collapse { display: none; } }

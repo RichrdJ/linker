@@ -16,7 +16,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import db, icons, importers, status
+from . import appicon, db, icons, importers, status
 
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"),
                     format="%(asctime)s %(levelname)s %(message)s")
@@ -199,20 +199,50 @@ def _state(request: Request):
 @app.get("/")
 def index(request: Request):
     state = _state(request)
+    s = state["settings"]
     return templates.TemplateResponse(request, "index.html", {"state": state, "state_json": db.dumps(state),
-                                                              "s": state["settings"], "version": APP_VERSION})
+                                                              "s": s, "accent_ink": appicon.ink_for(s["accent"]),
+                                                              "version": APP_VERSION})
 
 
 @app.get("/manifest.webmanifest")
 def manifest():
     s = db.settings()
+    c = s["accent"].lstrip("#")
     return JSONResponse({
         "name": s["title"], "short_name": s["title"], "start_url": "/", "display": "standalone",
         "background_color": "#141a22", "theme_color": "#141a22",
-        "icons": [{"src": "/static/icon-192.png", "sizes": "192x192", "type": "image/png"},
-                  {"src": "/static/icon-512.png", "sizes": "512x512", "type": "image/png"},
-                  {"src": "/static/favicon.svg", "sizes": "any", "type": "image/svg+xml"}],
+        "icons": [{"src": f"/icon-192.png?c={c}", "sizes": "192x192", "type": "image/png"},
+                  {"src": f"/icon-512.png?c={c}", "sizes": "512x512", "type": "image/png"},
+                  {"src": f"/favicon.svg?c={c}", "sizes": "any", "type": "image/svg+xml"}],
     }, media_type="application/manifest+json")
+
+
+# Logo in de accentkleur. ?c= is alleen om de browsercache te omzeilen als de kleur wijzigt.
+@app.get("/favicon.svg")
+def favicon():
+    return Response(appicon.svg(db.settings()["accent"]), media_type="image/svg+xml",
+                    headers={"Cache-Control": "no-cache"})
+
+
+@app.get("/icon-192.png")
+def app_icon_192():
+    return _app_icon(192)
+
+
+@app.get("/icon-512.png")
+def app_icon_512():
+    return _app_icon(512)
+
+
+def _app_icon(size: int):
+    accent = db.settings()["accent"]
+    try:
+        data = appicon.png(os.path.join(HERE, "static", f"icon-{size}.png"), accent)
+    except Exception:   # nooit een kapot icoon: dan maar het standaardblauw
+        logging.exception("App-icoon in accentkleur maken mislukt")
+        return FileResponse(os.path.join(HERE, "static", f"icon-{size}.png"), media_type="image/png")
+    return Response(data, media_type="image/png", headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/healthz")

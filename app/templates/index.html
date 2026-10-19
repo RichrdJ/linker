@@ -6,19 +6,22 @@
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#141a22">
 <title>{{ s.title }}</title>
-<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/static/icon-192.png">
-<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/favicon.svg?c={{ s.accent[1:] }}" type="image/svg+xml" id="favicon">
+<link rel="apple-touch-icon" href="/icon-192.png?c={{ s.accent[1:] }}">
+<link rel="manifest" href="/manifest.webmanifest?c={{ s.accent[1:] }}">
 <link rel="stylesheet" href="/static/style.css?v={{ version }}">
-<style>:root { --accent: {{ s.accent }}; }</style>
-<script>try { var w = localStorage.getItem("linker-sidebar"); if (w) document.documentElement.style.setProperty("--side-w", w + "px"); } catch (e) {}</script>
+<style>:root { --accent: {{ s.accent }}; --accent-ink: {{ accent_ink }}; }</style>
+<script>try {
+  var w = localStorage.getItem("linker-sidebar"); if (w) document.documentElement.style.setProperty("--side-w", w + "px");
+  if (localStorage.getItem("linker-sidebar-collapsed") === "1") document.documentElement.classList.add("side-collapsed");
+} catch (e) {}</script>
 </head>
 <body>
 <div class="bg" id="bg" aria-hidden="true"></div>
 
 <div class="app">
   <aside class="sidebar">
-    <a class="logo" href="/" id="logo"><span class="logo-mark" aria-hidden="true"></span><span id="title">{{ s.title }}</span></a>
+    <a class="logo" href="/" id="logo" title="{{ s.title }}"><span class="logo-mark" aria-hidden="true"></span><span id="title">{{ s.title }}</span></a>
 
     <nav class="collections" aria-labelledby="cat-label">
       <div class="side-head">
@@ -31,17 +34,21 @@
     </nav>
 
     <div class="sidebar-foot">
-      <button type="button" class="side-btn" id="btn-search" title="Zoeken (of begin gewoon te typen)">
+      <!-- Alleen op je telefoon: daar kun je niet 'gewoon beginnen met typen' -->
+      <button type="button" class="side-btn mobile-only" id="btn-search" title="Zoeken" aria-label="Zoeken">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
-        <span>Zoeken</span><kbd class="side-kbd" aria-hidden="true">/</kbd>
       </button>
-      <button type="button" class="side-btn" id="btn-settings">
+      <button type="button" class="side-btn" id="btn-settings" title="Instellingen">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
         <span>Instellingen</span>
       </button>
       <button type="button" class="side-btn" id="btn-lock" hidden>
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
         <span id="lock-label">Ontgrendelen</span>
+      </button>
+      <button type="button" class="side-btn" id="btn-collapse" aria-expanded="true" title="Zijbalk inklappen">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M9 5v14"/><path class="chev" d="m15 10-2 2 2 2"/></svg>
+        <span>Inklappen</span>
       </button>
     </div>
     <div class="resizer" id="resizer" role="separator" aria-orientation="vertical" aria-label="Breedte van de zijbalk"
@@ -62,13 +69,17 @@
     </div>
 
     <div class="col-head">
-      <h1 id="col-title"></h1>
-      <button type="button" class="mini edit-only" id="edit-collection" title="Categorie bewerken" hidden>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/></svg>
-      </button>
+      <h1 class="visually-hidden" id="col-title"></h1>
       <span class="grow"></span>
       <p class="clock" id="clock"><time id="time"></time><span id="date"></span></p>
-      <button type="button" class="btn edit-only" id="add-section" hidden>+ Sectie</button>
+      <span class="col-tools edit-only">
+        <button type="button" class="mini" id="edit-collection" title="Categorie bewerken" aria-label="Categorie bewerken" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/></svg>
+        </button>
+        <button type="button" class="ghost" id="add-section" title="Sectie toevoegen" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Sectie</span>
+        </button>
+      </span>
     </div>
 
     <div class="board" id="board"></div>

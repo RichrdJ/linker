@@ -5,6 +5,17 @@ Versienummers volgen [Semantic Versioning](https://semver.org/lang/nl/): het mid
 
 Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt bij het opstarten automatisch bijgewerkt en je links blijven bewaard.
 
+## [0.4.0] - 2026-10-19
+
+### Toegevoegd
+- **Zijbalk inklappen**: met de knop *Inklappen* onderin wordt de zijbalk een smalle strook met het logo, de knoppen en per categorie het icoon of de beginletter. Klik nog eens om hem weer uit te klappen. Je keuze wordt per browser onthouden. Op je telefoon verandert er niets.
+
+### Gewijzigd
+- De naam van de categorie (zoals *Privé* of *Werk*) staat niet meer groot boven de pagina. Welke categorie actief is, zie je in de zijbalk.
+- De knop **+ Sectie** rechtsboven is een rustige knop zonder rand geworden, die pas duidelijker wordt als je eroverheen beweegt.
+- De knop *Zoeken* onderin de zijbalk is weg. Zoeken werkt nog steeds: begin gewoon te typen of druk op `/`. Op je telefoon blijft het vergrootglas bovenaan staan, omdat je daar niet zomaar kunt beginnen met typen.
+- De **accentkleur** geldt nu overal: ook voor het logo in de zijbalk, het icoon in het browsertabblad en het icoon op je beginscherm of als geïnstalleerde app. Bij een lichte accentkleur wordt de schakel in het logo donker, net als de tekst op knoppen.
+
 ## [0.3.1] - 2026-10-19
 
 ### Gewijzigd
@@ -87,6 +98,7 @@ Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt
 - Installeerbaar als app (PWA).
 - Docker-image voor amd64 en arm64 via GitHub Actions, met PUID/PGID.
 
+[0.4.0]: https://github.com/RichrdJ/linker/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/RichrdJ/linker/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/RichrdJ/linker/compare/v0.2.7...v0.3.0
 [0.2.7]: https://github.com/RichrdJ/linker/compare/v0.2.6...v0.2.7
