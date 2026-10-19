@@ -91,7 +91,7 @@ button, input, select { font: inherit; color: inherit; }
 .side-btn:hover { background: var(--surface); color: var(--fg); }
 .side-btn svg, .mini svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 
-.main { min-width: 0; padding: 22px 32px 48px; }
+.main { min-width: 0; padding: 14px 32px 48px; }
 
 /* ------------------------------------------------ zoeken en klok */
 .topbar { margin-bottom: 4px; animation: rise .12s ease-out; }
@@ -115,7 +115,7 @@ button, input, select { font: inherit; color: inherit; }
 .search-hint kbd { font: 12px var(--font); padding: 0 5px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); }
 
 /* ------------------------------------------------ collectiekop */
-.col-head { display: flex; align-items: center; gap: 8px; margin: 6px 0 18px; min-height: 38px; }
+.col-head { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; min-height: 32px; }
 .col-tools { display: flex; align-items: center; gap: 2px; }
 
 /* Rustige knop zonder rand: alleen bij hover iets duidelijker */
