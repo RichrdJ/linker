@@ -76,16 +76,7 @@ button, input, select { font: inherit; color: inherit; }
 .col-count { font-size: 12px; opacity: .7; font-variant-numeric: tabular-nums; }
 .col-down { width: 7px; height: 7px; border-radius: 50%; background: var(--down); flex: none; }
 .col-btn[aria-current="true"] .col-down { box-shadow: 0 0 0 2px var(--accent-ink); }
-/* Subtiele + onder de categorieën: verschijnt als je in de buurt komt */
-.add-collection {
-  display: grid; place-items: center; width: 100%; height: 34px; margin-top: 4px; padding: 0;
-  background: none; border: 0; border-radius: var(--radius); color: var(--faint); cursor: pointer;
-  opacity: 0; transition: opacity .15s, color .15s, background .15s;
-}
-.add-collection svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
-.collections:hover .add-collection, .add-collection:focus-visible { opacity: 1; }
-.add-collection:hover { color: var(--accent); background: var(--surface); }
-@media (hover: none) { .add-collection { opacity: 1; } }
+
 
 .sidebar-foot { padding: 10px 12px 14px; border-top: 1px solid var(--line); display: grid; gap: 2px; }
 .side-btn {
@@ -275,7 +266,6 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
   .col-item { margin: 0; }
   .col-btn { white-space: nowrap; padding: 6px 12px; min-height: 34px; background: var(--surface); }
   .col-count { display: none; }
-  .add-collection { width: 34px; flex: none; margin: 0; opacity: 1; }
   .main { padding: 16px 14px 40px; }
   .cards { grid-template-columns: 1fr; gap: 8px; }
   .clock { display: none; }
@@ -297,7 +287,8 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
 .has-bg .section-count, .has-bg .section-path, .has-bg .section-tools .mini { color: rgba(255, 255, 255, .7); }
 
 /* ------------------------------------------------ snelkoppelingen verzamelen */
-.side-label { margin: 6px 10px 6px; font-size: 12.5px; font-weight: 600; color: var(--faint); }
+.side-head { display: flex; align-items: center; gap: 4px; margin: 6px 0 6px 10px; }
+.side-label { margin: 0; font-size: 12.5px; font-weight: 600; color: var(--faint); }
 .bookmarklet { cursor: grab; border-style: dashed; }
 .first-tip { margin: 0 0 18px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); font-size: 14px; }
 .first-tip kbd { font: 12px var(--font); padding: 0 5px; border: 1px solid var(--line); border-radius: 4px; }
@@ -306,6 +297,7 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
 .has-bg .first-tip { color: #fff; background: rgba(0, 0, 0, .35); border-color: rgba(255, 255, 255, .25); }
 @media (max-width: 760px) {
   .side-label { display: none; }
+  .side-head { order: 2; margin: 0; }
   .topbar { gap: 8px; }
   .first-tip { display: none; }
 }
@@ -315,7 +307,7 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
 /* Subtiele + naast de sectienaam */
 .add-inline { width: 24px; height: 24px; color: var(--faint); opacity: .7; }
 .add-inline svg { width: 15px; height: 15px; }
-.section-head:hover .add-inline, .add-inline:focus-visible { opacity: 1; color: var(--accent); }
+.section-head:hover .add-inline, .side-head:hover .add-inline, .add-inline:focus-visible { opacity: 1; color: var(--accent); }
 .has-bg .add-inline { color: rgba(255, 255, 255, .7); }
 .add-card { font-size: 20px; text-align: center; color: var(--faint); }
 

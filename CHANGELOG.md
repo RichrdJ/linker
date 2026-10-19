@@ -5,6 +5,11 @@ Versienummers volgen [Semantic Versioning](https://semver.org/lang/nl/): het mid
 
 Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt bij het opstarten automatisch bijgewerkt en je links blijven bewaard.
 
+## [0.2.7] - 2026-10-19
+
+### Gewijzigd
+- De **+** voor een nieuwe categorie staat nu naast het kopje *Categorieën*, net als de + naast een sectienaam: altijd licht zichtbaar, blauw als je eroverheen beweegt. Op je telefoon staat hij achter de tabs.
+
 ## [0.2.6] - 2026-10-19
 
 ### Gewijzigd
@@ -72,6 +77,7 @@ Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt
 - Installeerbaar als app (PWA).
 - Docker-image voor amd64 en arm64 via GitHub Actions, met PUID/PGID.
 
+[0.2.7]: https://github.com/RichrdJ/linker/compare/v0.2.6...v0.2.7
 [0.2.6]: https://github.com/RichrdJ/linker/compare/v0.2.5...v0.2.6
 [0.2.5]: https://github.com/RichrdJ/linker/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/RichrdJ/linker/compare/v0.2.3...v0.2.4

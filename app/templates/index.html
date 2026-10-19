@@ -20,11 +20,13 @@
     <a class="logo" href="/" id="logo"><span class="logo-mark" aria-hidden="true"></span><span id="title">{{ s.title }}</span></a>
 
     <nav class="collections" aria-labelledby="cat-label">
-      <p class="side-label" id="cat-label">Categorieën</p>
+      <div class="side-head">
+        <p class="side-label" id="cat-label">Categorieën</p>
+        <button type="button" class="mini add-inline edit-only" id="add-collection" title="Categorie toevoegen" aria-label="Categorie toevoegen">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
       <ul id="collections"></ul>
-      <button type="button" class="add-collection edit-only" id="add-collection" title="Categorie toevoegen" aria-label="Categorie toevoegen">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-      </button>
     </nav>
 
     <div class="sidebar-foot">
