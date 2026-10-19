@@ -26,6 +26,10 @@
     </nav>
 
     <div class="sidebar-foot">
+      <button type="button" class="side-btn" id="btn-search" title="Zoeken (of begin gewoon te typen)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <span>Zoeken</span><kbd class="side-kbd" aria-hidden="true">/</kbd>
+      </button>
       <button type="button" class="side-btn" id="btn-settings">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
         <span>Instellingen</span>
@@ -38,17 +42,17 @@
   </aside>
 
   <main class="main">
-    <div class="topbar">
+    <!-- Zoeken verschijnt pas als je begint te typen (of op / drukt) -->
+    <div class="topbar" id="topbar" hidden>
       <div class="search">
         <svg class="search-glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
         <input id="q" type="search" autocomplete="off" spellcheck="false"
                placeholder="Zoek in je snelkoppelingen of op het web" aria-label="Zoek in je snelkoppelingen of op het web"
                aria-describedby="search-hint">
-        <kbd class="slash" aria-hidden="true">/</kbd>
+        <kbd class="slash" aria-hidden="true">Esc</kbd>
       </div>
-      <p class="clock" id="clock"><time id="time"></time><span id="date"></span></p>
+      <p class="search-hint" id="search-hint" aria-live="polite"></p>
     </div>
-    <p class="search-hint" id="search-hint" aria-live="polite"></p>
 
     <div class="col-head">
       <h1 id="col-title"></h1>
@@ -56,6 +60,7 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/></svg>
       </button>
       <span class="grow"></span>
+      <p class="clock" id="clock"><time id="time"></time><span id="date"></span></p>
       <button type="button" class="btn edit-only" id="add-section" hidden>+ Sectie</button>
     </div>
 

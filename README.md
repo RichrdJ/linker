@@ -15,7 +15,7 @@ Alles draait in één container met SQLite. De pagina laadt geen scripts, fonts 
   - **sleep** een link of het adres uit een ander tabblad op de pagina (of op een sectie);
   - de **bladwijzer-knop "+ Naar Linker"** (te vinden in *Instellingen*): sleep hem naar je bladwijzerbalk en bewaar elke website met één klik. Na het opslaan ga je terug naar de pagina.
 - **Ordenen**: sleep snelkoppelingen, secties en categorieën om de volgorde te wijzigen. Laat een snelkoppeling of sectie op een categorie in de zijbalk vallen om hem te verplaatsen. Een sectie sorteer je met één klik van A tot Z.
-- **Zoeken met het toetsenbord**: begin gewoon met typen of druk op `/`.
+- **Zoeken met het toetsenbord**: begin gewoon met typen of druk op `/` (of klik op *Zoeken* in de zijbalk). De zoekbalk verschijnt pas dan, en verdwijnt weer met `Esc`.
   - Doorzoekt alle categorieën tegelijk (naam, omschrijving en adres).
   - `Enter` opent de beste treffer, `↑` `↓` kiest een andere, `Esc` wist.
   - `Shift`+`Enter` zoekt op het web: DuckDuckGo, Google, Startpage, Bing, Brave, Kagi, Ecosia of een eigen zoekmachine.
@@ -85,8 +85,8 @@ Open daarna http://localhost:5656.
 
 Alle wijzigingen per versie staan in [CHANGELOG.md](CHANGELOG.md) en onder [Releases](https://github.com/RichrdJ/linker/releases). Het versienummer van je installatie staat onderaan *Instellingen*.
 
-- `:latest` volgt `main`, `:0.2.3` is een vaste versie.
-- Wil je zelf bepalen wanneer je updatet? Zet dan een vast versienummer in `portainer-stack.yml`, bijvoorbeeld `:0.2.3`.
+- `:latest` volgt `main`, `:0.2.4` is een vaste versie.
+- Wil je zelf bepalen wanneer je updatet? Zet dan een vast versienummer in `portainer-stack.yml`, bijvoorbeeld `:0.2.4`.
 
 **Nieuwe versie uitbrengen:** werk `CHANGELOG.md` en `app/VERSION` bij, commit, en push met een tag:
 

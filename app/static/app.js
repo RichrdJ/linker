@@ -316,13 +316,30 @@ function go(url, newTab) {
   else location.href = url;
 }
 
+/* Zoekbalk is verborgen tot je begint te typen */
+const topbar = $("#topbar");
+function openSearch() {
+  topbar.hidden = false;
+  q.focus();
+}
+function closeSearch() {
+  q.value = "";
+  topbar.hidden = true;
+  q.blur();
+  renderBoard();
+}
+q.addEventListener("blur", () => setTimeout(() => {
+  if (!q.value.trim() && document.activeElement !== q) closeSearch();
+}, 150));
+$("#btn-search").addEventListener("click", openSearch);
+
 q.addEventListener("input", () => {
   if (!q.value.trim()) { renderBoard(); return; }
   renderBoard();
 });
 q.addEventListener("keydown", e => {
   const raw = q.value.trim();
-  if (e.key === "Escape") { q.value = ""; renderBoard(); q.blur(); return; }
+  if (e.key === "Escape") { closeSearch(); return; }
   if ((e.key === "ArrowDown" || e.key === "ArrowUp") && raw) {
     const ids = $$(".card", board).map(el => Number(el.dataset.id));
     if (!ids.length) return;
@@ -354,8 +371,8 @@ document.addEventListener("keydown", e => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   const tag = document.activeElement?.tagName;
   if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
-  if (e.key === "/") { e.preventDefault(); q.focus(); return; }
-  if (e.key.length === 1 && /\S/.test(e.key)) q.focus();   // gewoon beginnen met typen
+  if (e.key === "/") { e.preventDefault(); openSearch(); return; }
+  if (e.key.length === 1 && /\S/.test(e.key)) openSearch();   // gewoon beginnen met typen
 });
 
 /* ================================================================ status */
@@ -938,5 +955,4 @@ window.addEventListener("hashchange", () => {
   const id = Number(location.hash.slice(1));
   if (id && id !== currentId && cols().some(c => c.id === id)) openCollection(id);
 });
-if (matchMedia("(pointer: fine)").matches) q.focus();
 handleAddParam();
