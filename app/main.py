@@ -7,6 +7,7 @@ import re
 import secrets
 from contextlib import asynccontextmanager
 from datetime import date
+from urllib.parse import urlparse
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
@@ -128,11 +129,11 @@ class SectionIn(NameIn):
 
 class LinkIn(BaseModel):
     section_id: int
-    name: str = Field(min_length=1, max_length=80)
+    name: str = Field(default="", max_length=80)    # leeg = titel van de pagina
     url: str = Field(min_length=1, max_length=2000)
     description: str = Field(default="", max_length=200)
     icon: str = Field(default="", max_length=500)
-    check_enabled: bool = True
+    check_enabled: bool = False
     check_url: str = Field(default="", max_length=2000)
 
 
@@ -166,8 +167,15 @@ def _link_values(body: LinkIn):
     if not db.one("SELECT id FROM sections WHERE id = ?", (body.section_id,)):
         raise HTTPException(404, "Die sectie bestaat niet meer. Ververs de pagina.")
     check_url = normalize_url(body.check_url) if body.check_url.strip() else ""
-    return (body.section_id, body.name.strip(), normalize_url(body.url), body.description.strip(),
+    url = normalize_url(body.url)
+    name = body.name.strip() or _host(url)
+    return (body.section_id, name, url, body.description.strip(),
             body.icon.strip(), 1 if body.check_enabled else 0, check_url)
+
+
+def _host(url):
+    host = urlparse(url).hostname or url
+    return host.removeprefix("www.")[:80]
 
 
 def _state(request: Request):
@@ -256,11 +264,18 @@ async def icon_preview(icon: str = "", url: str = ""):
     return FileResponse(path, media_type=media, headers=ICON_HEADERS)
 
 
+@app.get("/api/page-info", dependencies=[Depends(require_edit)])
+async def page_info(url: str):
+    """Titel van een pagina, om het naamveld van een nieuwe snelkoppeling voor te vullen."""
+    full = normalize_url(url)
+    return {"url": full, "title": await icons.page_title(full)}
+
+
 @app.post("/api/links/{link_id}/icon/refresh", dependencies=[Depends(require_edit)])
 async def refresh_icon(link_id: int):
     link = db.one("SELECT url, icon FROM links WHERE id = ?", (link_id,))
     if not link:
-        raise HTTPException(404, "Link niet gevonden.")
+        raise HTTPException(404, "Snelkoppeling niet gevonden.")
     got = await icons.resolve(link["icon"], link["url"], force=True)
     return {"found": bool(got)}
 
@@ -271,7 +286,7 @@ async def refresh_icon(link_id: int):
 def create_collection(body: CollectionIn):
     cid = db.execute("INSERT INTO collections (name, icon, position) VALUES (?, ?, ?)",
                      (body.name.strip(), body.icon.strip(), db.next_position("collections")))
-    db.execute("INSERT INTO sections (collection_id, name, position) VALUES (?, 'Links', 0)", (cid,))
+    db.execute("INSERT INTO sections (collection_id, name, position) VALUES (?, ?, 0)", (cid, db.DEFAULT_SECTION))
     return {"id": cid}
 
 
@@ -292,7 +307,7 @@ def delete_collection(collection_id: int):
 
 def _collection_or_404(collection_id):
     if not db.one("SELECT id FROM collections WHERE id = ?", (collection_id,)):
-        raise HTTPException(404, "Die collectie bestaat niet meer. Ververs de pagina.")
+        raise HTTPException(404, "Die categorie bestaat niet meer. Ververs de pagina.")
 
 
 @app.post("/api/sections", dependencies=[Depends(require_edit)])
@@ -312,7 +327,7 @@ def update_section(section_id: int, body: SectionIn):
     _collection_or_404(body.collection_id)
     db.execute("UPDATE sections SET name = ?, collection_id = ? WHERE id = ?",
                (body.name.strip(), body.collection_id, section_id))
-    if old["collection_id"] != body.collection_id:   # verplaatst: achteraan in de nieuwe collectie
+    if old["collection_id"] != body.collection_id:   # verplaatst: achteraan in de nieuwe categorie
         db.execute("UPDATE sections SET position = ? WHERE id = ?",
                    (db.next_position("sections", "WHERE collection_id = ?", (body.collection_id,)), section_id))
     return {"ok": True}
@@ -333,7 +348,9 @@ def sort_section(section_id: int):
 # ---------------------------------------------------------------- links
 
 @app.post("/api/links", dependencies=[Depends(require_edit)])
-def create_link(body: LinkIn):
+async def create_link(body: LinkIn):
+    if not body.name.strip():   # geen naam opgegeven: de titel van de pagina
+        body.name = await icons.page_title(normalize_url(body.url))
     values = _link_values(body)
     lid = db.execute(
         "INSERT INTO links (section_id, name, url, description, icon, check_enabled, check_url, position) "
@@ -347,7 +364,7 @@ def create_link(body: LinkIn):
 def update_link(link_id: int, body: LinkIn):
     old = db.one("SELECT section_id FROM links WHERE id = ?", (link_id,))
     if not old:
-        raise HTTPException(404, "Link niet gevonden.")
+        raise HTTPException(404, "Snelkoppeling niet gevonden.")
     values = _link_values(body)
     db.execute("UPDATE links SET section_id = ?, name = ?, url = ?, description = ?, icon = ?, "
                "check_enabled = ?, check_url = ? WHERE id = ?", (*values, link_id))
@@ -361,9 +378,9 @@ def update_link(link_id: int, body: LinkIn):
 
 @app.post("/api/links/{link_id}/move/{collection_id}", dependencies=[Depends(require_edit)])
 def move_link(link_id: int, collection_id: int):
-    """Link op een collectie in de zijbalk laten vallen: achteraan in de eerste sectie."""
+    """Snelkoppeling op een categorie in de zijbalk laten vallen: achteraan in de eerste sectie."""
     if not db.one("SELECT id FROM links WHERE id = ?", (link_id,)):
-        raise HTTPException(404, "Link niet gevonden.")
+        raise HTTPException(404, "Snelkoppeling niet gevonden.")
     _collection_or_404(collection_id)
     sid = db.first_section(collection_id)
     db.execute("UPDATE links SET section_id = ?, position = ? WHERE id = ?",
@@ -525,7 +542,7 @@ def export():
 @app.post("/api/import", dependencies=[Depends(require_edit)])
 async def import_file(request: Request):
     """Back-up of export van een andere dienst. Een Linker-back-up vervangt alles (tenzij mode=append),
-    de rest wordt als nieuwe collectie(s) toegevoegd."""
+    de rest wordt als nieuwe categorie(ën) toegevoegd."""
     raw = await request.body()
     if len(raw) > 20 * 1024 * 1024:
         raise HTTPException(413, "Dit bestand is te groot (max. 20 MB).")

@@ -19,9 +19,10 @@
   <aside class="sidebar">
     <a class="logo" href="/" id="logo"><span class="logo-mark" aria-hidden="true"></span><span id="title">{{ s.title }}</span></a>
 
-    <nav class="collections" aria-label="Collecties">
+    <nav class="collections" aria-labelledby="cat-label">
+      <p class="side-label" id="cat-label">Categorieën</p>
       <ul id="collections"></ul>
-      <button type="button" class="add-collection edit-only" id="add-collection">+ Collectie</button>
+      <button type="button" class="add-collection edit-only" id="add-collection">+ Categorie</button>
     </nav>
 
     <div class="sidebar-foot">
@@ -41,21 +42,24 @@
       <div class="search">
         <svg class="search-glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
         <input id="q" type="search" autocomplete="off" spellcheck="false"
-               placeholder="Zoek in al je links of op het web" aria-label="Zoek in al je links of op het web"
+               placeholder="Zoek in je snelkoppelingen of op het web" aria-label="Zoek in je snelkoppelingen of op het web"
                aria-describedby="search-hint">
         <kbd class="slash" aria-hidden="true">/</kbd>
       </div>
+      <button type="button" class="btn primary add-shortcut edit-only" id="add-shortcut" title="Snelkoppeling toevoegen (of plak een adres met Ctrl+V)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Snelkoppeling</span>
+      </button>
       <p class="clock" id="clock"><time id="time"></time><span id="date"></span></p>
     </div>
     <p class="search-hint" id="search-hint" aria-live="polite"></p>
 
     <div class="col-head">
       <h1 id="col-title"></h1>
-      <button type="button" class="mini edit-only" id="edit-collection" title="Collectie bewerken" hidden>
+      <button type="button" class="mini edit-only" id="edit-collection" title="Categorie bewerken" hidden>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/></svg>
       </button>
       <span class="grow"></span>
-      <button type="button" class="btn primary edit-only" id="add-section" hidden>+ Sectie</button>
+      <button type="button" class="btn edit-only" id="add-section" hidden>+ Sectie</button>
     </div>
 
     <div class="board" id="board"></div>
@@ -65,23 +69,28 @@
 <!-- Link -->
 <dialog id="dlg-link" class="dlg">
   <form method="dialog" id="form-link" novalidate>
-    <h2 id="dlg-link-title">Link toevoegen</h2>
+    <h2 id="dlg-link-title">Snelkoppeling toevoegen</h2>
     <div class="fields">
-      <label>Naam<input name="name" required maxlength="80" placeholder="Sonarr"></label>
-      <label>Adres<input name="url" required placeholder="http://192.168.1.10:8989" inputmode="url"></label>
-      <label class="wide">Omschrijving <span class="opt">(optioneel)</span><input name="description" maxlength="200" placeholder="Series"></label>
-      <div class="wide icon-field">
-        <label>Icoon <span class="opt">(optioneel)</span><input name="icon" placeholder="leeg = favicon van de site" maxlength="500"></label>
-        <label class="btn file-btn" title="Eigen icoon uploaden (PNG, SVG, ICO, JPG, WebP)">Uploaden<input type="file" accept="image/*,.ico,.svg" id="icon-file" hidden></label>
-        <div class="icon-preview" id="icon-preview" aria-hidden="true"></div>
-      </div>
-      <p class="help wide">Leeg laten pakt het icoon van de site zelf. Typ de naam van een app (<code>sonarr</code>, <code>plex</code>, <code>home-assistant</code>) voor een icoon uit dashboard-icons of selfh.st, plak een afbeeldingsadres, upload een eigen bestand of gebruik een emoji.</p>
-      <label>Sectie<select name="section_id"></select></label>
-      <label class="check"><input type="checkbox" name="check_enabled" checked> Bereikbaarheid controleren</label>
-      <details class="wide">
-        <summary>Ander adres voor de controle</summary>
-        <label>Controle-adres<input name="check_url" placeholder="http://sonarr:8989"></label>
-        <p class="help">Handig als de link via je domein loopt, maar Linker de dienst intern sneller bereikt (bv. via de containernaam).</p>
+      <label class="wide">Adres<input name="url" required placeholder="https://voorbeeld.nl of 192.168.1.10:8989" inputmode="url" autocomplete="off"></label>
+      <label class="wide">Naam <span class="opt" id="name-hint">(leeg = titel van de pagina)</span><input name="name" maxlength="80"></label>
+      <label class="wide">Categorie en sectie<select name="section_id"></select></label>
+      <details class="wide more" id="more-opts">
+        <summary>Meer opties: omschrijving, icoon, online-controle</summary>
+        <div class="fields">
+          <label class="wide">Omschrijving <span class="opt">(optioneel)</span><input name="description" maxlength="200" placeholder="bv. Teamplanning"></label>
+          <div class="wide icon-field">
+            <label>Icoon <span class="opt">(optioneel)</span><input name="icon" placeholder="leeg = icoon van de site" maxlength="500"></label>
+            <label class="btn file-btn" title="Eigen icoon uploaden (PNG, SVG, ICO, JPG, WebP)">Uploaden<input type="file" accept="image/*,.ico,.svg" id="icon-file" hidden></label>
+            <div class="icon-preview" id="icon-preview" aria-hidden="true"></div>
+          </div>
+          <p class="help wide">Leeg laten pakt het icoon van de site zelf. Typ de naam van een app (<code>outlook</code>, <code>plex</code>, <code>home-assistant</code>) voor een icoon uit dashboard-icons of selfh.st, plak een afbeeldingsadres, upload een eigen bestand of gebruik een emoji.</p>
+          <label class="check wide" title="Toont een groen of rood bolletje. Handig voor diensten in je thuisnetwerk."><input type="checkbox" name="check_enabled"> Controleren of hij online is</label>
+          <details class="wide">
+            <summary>Ander adres voor de controle</summary>
+            <label>Controle-adres<input name="check_url" placeholder="http://sonarr:8989"></label>
+            <p class="help">Handig als de snelkoppeling via je domein loopt, maar Linker de dienst intern sneller bereikt (bv. via de containernaam).</p>
+          </details>
+        </div>
       </details>
     </div>
     <p class="form-error" role="alert"></p>
@@ -94,14 +103,14 @@
   </form>
 </dialog>
 
-<!-- Collectie of sectie: naam (+ icoon / collectie) -->
+<!-- Categorie of sectie: naam (+ icoon / categorie) -->
 <dialog id="dlg-name" class="dlg narrow">
   <form method="dialog" id="form-name" novalidate>
     <h2 id="dlg-name-title"></h2>
     <div class="fields single">
       <label>Naam<input name="name" required maxlength="80"></label>
-      <label id="name-icon-row">Icoon <span class="opt">(optioneel, bv. een emoji)</span><input name="icon" maxlength="500" placeholder="🎬"></label>
-      <label id="name-collection-row">Collectie<select name="collection_id"></select></label>
+      <label id="name-icon-row">Icoon <span class="opt">(optioneel, bv. een emoji)</span><input name="icon" maxlength="500" placeholder="💼"></label>
+      <label id="name-collection-row">Categorie<select name="collection_id"></select></label>
     </div>
     <p class="form-error" role="alert"></p>
     <div class="actions">
@@ -189,8 +198,14 @@
     </fieldset>
 
     <fieldset>
+      <legend>Opslaan vanuit je browser</legend>
+      <p class="help">Sleep deze knop naar je bladwijzerbalk. Klik erop op elke website om die als snelkoppeling in Linker te bewaren; daarna ga je vanzelf terug naar de pagina.</p>
+      <div class="row"><a class="btn bookmarklet" id="bookmarklet" href="#" title="Sleep mij naar je bladwijzerbalk">+ Naar Linker</a></div>
+    </fieldset>
+
+    <fieldset>
       <legend>Importeren en back-up</legend>
-      <p class="help">Importeer een Linker- of ctrlTAB-back-up, een Linkwarden-export of de bladwijzers uit je browser (HTML-export uit Chrome, Firefox, Edge of Safari). Een back-up bevat je links en instellingen, maar niet je wachtwoord of achtergrond.</p>
+      <p class="help">Importeer de bladwijzers uit je browser (HTML-export uit Chrome, Firefox, Edge of Safari), een Linker- of ctrlTAB-back-up of een Linkwarden-export. Een back-up bevat je snelkoppelingen en instellingen, maar niet je wachtwoord of achtergrond.</p>
       <div class="row">
         <label class="btn file-btn">Bestand importeren<input type="file" accept=".json,.html,.htm,application/json,text/html" id="import-file" hidden></label>
         <a class="btn" href="/api/export" id="btn-export">Back-up downloaden</a>

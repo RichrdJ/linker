@@ -10,4 +10,5 @@
 - Nooit een database of back-up committen (`config/` en `*.db` staan in `.gitignore`).
 - Schemawijzigingen: idempotente migratie in `db.init()` via `_add_column`. Nieuwe instellingen: toevoegen aan `DEFAULT_SETTINGS`.
 - Geen externe scripts, fonts of CDN's in de pagina: Linker moet ook zonder internet werken. Alleen het ophalen van iconen gebruikt internet, en dat gebeurt op de server.
+- Begrippen: in de app heten het *categorieën* en *snelkoppelingen*; in de code en database heten ze `collections` en `links`. Teksten voor de gebruiker altijd met de app-begrippen.
 - Lokaal draaien: `DATA_DIR=./config uvicorn app.main:app --reload --port 5656`.

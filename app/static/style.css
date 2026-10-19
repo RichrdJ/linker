@@ -289,3 +289,23 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
 .has-bg .col-head h1, .has-bg .clock, .has-bg .clock time, .has-bg .section-name, .has-bg .search-hint,
 .has-bg .search-hint b, .has-bg .col-head .mini { color: #fff; text-shadow: 0 1px 10px rgba(0, 0, 0, .6); }
 .has-bg .section-count, .has-bg .section-path, .has-bg .section-tools .mini { color: rgba(255, 255, 255, .7); }
+
+/* ------------------------------------------------ snelkoppelingen verzamelen */
+.side-label { margin: 6px 10px 6px; font-size: 12.5px; font-weight: 600; color: var(--faint); }
+.add-shortcut { gap: 6px; height: 50px; padding: 0 18px; border-radius: var(--radius-lg); font-size: 15px; flex: none; }
+.add-shortcut svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.bookmarklet { cursor: grab; border-style: dashed; }
+.first-tip { margin: 0 0 18px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); font-size: 14px; }
+.first-tip kbd { font: 12px var(--font); padding: 0 5px; border: 1px solid var(--line); border-radius: 4px; }
+.first-tip b { color: var(--fg); }
+.drop-url .main { outline: 2px dashed var(--accent); outline-offset: -10px; border-radius: var(--radius-lg); }
+.has-bg .first-tip { color: #fff; background: rgba(0, 0, 0, .35); border-color: rgba(255, 255, 255, .25); }
+@media (max-width: 760px) {
+  .side-label { display: none; }
+  .topbar { gap: 8px; }
+  .add-shortcut { width: 50px; padding: 0; }
+  .add-shortcut span { display: none; }
+  .first-tip { display: none; }
+}
+.dlg details.more { border-top: 1px solid var(--line); padding-top: 12px; }
+.dlg details.more > .fields { margin-top: 12px; }

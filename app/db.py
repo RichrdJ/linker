@@ -1,4 +1,4 @@
-"""SQLite-opslag: collecties → secties → links, plus instellingen."""
+"""SQLite-opslag: categorieën (tabel collections) → secties → snelkoppelingen (links), plus instellingen."""
 import json
 import os
 import sqlite3
@@ -77,6 +77,24 @@ def init():
         # _add_column(conn, "links", "kolom", "TEXT NOT NULL DEFAULT ''")
         for k, v in DEFAULT_SETTINGS.items():
             conn.execute("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)", (k, v))
+        _seed(conn)
+
+
+STARTER = [("Privé", "🏠"), ("Werk", "💼")]
+DEFAULT_SECTION = "Snelkoppelingen"
+
+
+def _seed(conn):
+    """Eerste start: categorieën Privé en Werk, zodat je direct snelkoppelingen kunt toevoegen."""
+    if conn.execute("SELECT 1 FROM settings WHERE key = 'seeded'").fetchone():
+        return
+    if not conn.execute("SELECT 1 FROM collections LIMIT 1").fetchone():
+        for pos, (name, icon) in enumerate(STARTER):
+            cid = conn.execute("INSERT INTO collections (name, icon, position) VALUES (?, ?, ?)",
+                               (name, icon, pos)).lastrowid
+            conn.execute("INSERT INTO sections (collection_id, name, position) VALUES (?, ?, 0)",
+                         (cid, DEFAULT_SECTION))
+    conn.execute("INSERT INTO settings (key, value) VALUES ('seeded', '1')")
 
 
 def _add_column(conn, table, column, ddl):
@@ -170,7 +188,8 @@ def first_section(collection_id):
     s = one("SELECT id FROM sections WHERE collection_id = ? ORDER BY position, id LIMIT 1", (collection_id,))
     if s:
         return s["id"]
-    return execute("INSERT INTO sections (collection_id, name, position) VALUES (?, 'Links', 0)", (collection_id,))
+    return execute("INSERT INTO sections (collection_id, name, position) VALUES (?, ?, 0)",
+                   (collection_id, DEFAULT_SECTION))
 
 
 # ---------------------------------------------------------------- back-up en import
@@ -198,7 +217,7 @@ def insert_tree(collections, replace=False, settings_in=None):
             counts["collections"] += 1
             for spos, sec in enumerate(col.get("sections") or []):
                 sid = conn.execute("INSERT INTO sections (collection_id, name, position) VALUES (?, ?, ?)",
-                                   (cid, str(sec.get("name") or "Links")[:80], spos)).lastrowid
+                                   (cid, str(sec.get("name") or DEFAULT_SECTION)[:80], spos)).lastrowid
                 counts["sections"] += 1
                 for lpos, link in enumerate(sec.get("links") or []):
                     url = str(link.get("url") or "").strip()

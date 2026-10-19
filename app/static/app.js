@@ -2,7 +2,7 @@
 
 /* ================================================================ toestand */
 let state = JSON.parse(document.getElementById("initial-state").textContent);
-let currentId = null;     // actieve collectie
+let currentId = null;     // actieve categorie (in de code: collection)
 let statusMap = {};
 let selectedId = null;    // link die Enter opent
 
@@ -95,7 +95,7 @@ function iconHTML(link) {
 function cardHTML(link, terms) {
   const s = state.settings;
   const target = s.new_tab === "1" ? ' target="_blank" rel="noopener"' : "";
-  const sub = link.description || hostOf(link.url);
+  const sub = link.description || hostOf(link.url).replace(/^www\./, "");
   const hl = t => (terms?.length ? highlight(t, terms) : esc(t));
   return `<div class="card" data-id="${link.id}">
     <a class="card-link" href="${esc(link.url)}"${target} draggable="false" title="${esc(link.url)}">
@@ -121,7 +121,7 @@ function sectionHTML(sec, opts = {}) {
       <h2 class="section-name" id="s${sec.id}">${path ? `<span class="section-path">${esc(path)} / </span>` : ""}${esc(sec.name)}</h2>
       <span class="section-count">${links.length || ""}</span>
       ${searching ? "" : `<span class="section-tools">
-        <button type="button" class="mini" data-add-link="${sec.id}" title="Link toevoegen">${SVG.plus}</button>
+        <button type="button" class="mini" data-add-link="${sec.id}" title="Snelkoppeling toevoegen">${SVG.plus}</button>
         <button type="button" class="mini" data-sort="${sec.id}" title="Sorteren van A tot Z">${SVG.az}</button>
         <button type="button" class="mini" data-edit-section="${sec.id}" title="Sectie bewerken">${SVG.edit}</button>
         <span class="mini grip section-grip" title="Slepen om de sectie te verplaatsen">${SVG.grip}</span>
@@ -129,7 +129,7 @@ function sectionHTML(sec, opts = {}) {
     </div>
     <div class="cards">
       ${links.map(l => cardHTML(l, terms)).join("")}
-      ${searching || links.length ? "" : `<button type="button" class="add-card edit-only" data-add-link="${sec.id}">+ Link toevoegen</button>`}
+      ${searching || links.length ? "" : `<button type="button" class="add-card edit-only" data-add-link="${sec.id}">+ Snelkoppeling</button>`}
     </div>
   </section>`;
 }
@@ -176,16 +176,19 @@ function renderBoard() {
   $("#add-section").hidden = !col;
   if (!col) {
     board.innerHTML = `<div class="empty">
-      <h2>Nog geen collecties</h2>
-      <p>Een collectie is een pagina met links, bijvoorbeeld Media, Beheer of Werk. Je kunt ook je browserbladwijzers of een ctrlTAB-back-up importeren via Instellingen.</p>
-      <button type="button" class="btn primary" id="empty-start">Eerste collectie maken</button>
+      <h2>Nog geen categorieën</h2>
+      <p>Maak categorieën zoals Privé en Werk om je snelkoppelingen in te bewaren. Je kunt ook de bladwijzers uit je browser importeren via Instellingen.</p>
+      <button type="button" class="btn primary" id="empty-start">Categorie maken</button>
     </div>`;
     $("#empty-start").onclick = () => withEdit(() => openName("collection"));
   } else if (!col.sections.length) {
-    board.innerHTML = `<div class="empty"><h2>Deze collectie is leeg</h2><p>Voeg een sectie toe om er links in te zetten.</p>
+    board.innerHTML = `<div class="empty"><h2>${esc(col.name)} is nog leeg</h2><p>Voeg een sectie toe om er snelkoppelingen in te zetten.</p>
       <button type="button" class="btn primary edit-only" data-add-section>+ Sectie</button></div>`;
   } else {
     board.innerHTML = col.sections.map(s => sectionHTML(s)).join("");
+    if (!col.sections.some(s => s.links.length)) {
+      board.insertAdjacentHTML("afterbegin", `<p class="first-tip edit-only">Plak een adres met <kbd>Ctrl</kbd>+<kbd>V</kbd>, sleep een link uit een ander tabblad hierheen, of gebruik <b>+ Snelkoppeling</b>.</p>`);
+    }
   }
   selectedId = null;
   hint.textContent = "";
@@ -343,7 +346,7 @@ q.addEventListener("keydown", e => {
 
 document.addEventListener("keydown", e => {
   if (document.querySelector("dialog[open]")) return;
-  if (e.altKey && /^[1-9]$/.test(e.key)) {          // Alt+1…9: naar collectie
+  if (e.altKey && /^[1-9]$/.test(e.key)) {          // Alt+1…9: naar categorie
     const c = cols()[Number(e.key) - 1];
     if (c) { e.preventDefault(); openCollection(c.id); }
     return;
@@ -415,6 +418,7 @@ document.addEventListener("click", async e => {
   if (t.closest("[data-add-section]") || t.closest("#add-section")) return openName("section");
   if (t.closest("#edit-collection")) return openName("collection", currentId);
   if (t.closest("#add-collection")) return withEdit(() => openName("collection"));
+  if (t.closest("#add-shortcut")) return openLink(null, null);
   const sort = t.closest("[data-sort]");
   if (sort) {
     try { await api("POST", `/api/sections/${sort.dataset.sort}/sort`); await reload(); toast("Gesorteerd van A tot Z"); }
@@ -531,27 +535,69 @@ const setError = (form, msg) => ($(".form-error", form).textContent = msg || "")
 const dlgLink = $("#dlg-link"), formLink = $("#form-link");
 let linkEditId = null;
 
-async function openLink(id, sectionId) {
+let nameTouched = false, checkTouched = false, afterSave = null;
+
+function isLocalAddress(url) {
+  const host = hostOf(/^[a-z]+:\/\//i.test(url) ? url : "http://" + url).split(":")[0].toLowerCase();
+  return host === "localhost" || /^(\d{1,3}\.){3}\d{1,3}$/.test(host) || /\.(lan|local|home|internal)$/.test(host) || !host.includes(".");
+}
+
+async function openLink(id, sectionId, prefill = {}) {
   if (!state.can_edit && !(await openUnlock())) return;
+  if (!cols().length) { toast("Maak eerst een categorie."); return; }
   linkEditId = id;
   const link = id ? findLink(id)?.l : null;
-  $("#dlg-link-title").textContent = link ? "Link bewerken" : "Link toevoegen";
+  $("#dlg-link-title").textContent = link ? "Snelkoppeling bewerken" : "Snelkoppeling toevoegen";
   formLink.section_id.innerHTML = cols().map(c => `<optgroup label="${esc(c.name)}">${
-    c.sections.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join("")}</optgroup>`).join("");
-  formLink.name.value = link?.name || "";
-  formLink.url.value = link?.url || "";
+    c.sections.map(s => `<option value="${s.id}">${esc(c.name)} › ${esc(s.name)}</option>`).join("")}</optgroup>`).join("");
+  formLink.url.value = link?.url || prefill.url || "";
+  formLink.name.value = link?.name || prefill.name || "";
+  formLink.name.placeholder = "";
   formLink.description.value = link?.description || "";
   formLink.icon.value = link?.icon || "";
-  formLink.check_enabled.checked = link ? link.check_enabled : true;
   formLink.check_url.value = link?.check_url || "";
-  formLink.section_id.value = String(link?.section_id || sectionId || current()?.sections[0]?.id);
-  $("details", formLink).open = !!link?.check_url;
+  const firstSection = (current() || cols()[0])?.sections[0]?.id;
+  formLink.section_id.value = String(link?.section_id || sectionId || firstSection);
+  if (!formLink.section_id.value) formLink.section_id.selectedIndex = 0;
+  nameTouched = !!(link || prefill.name);
+  checkTouched = !!link;
+  formLink.check_enabled.checked = link ? link.check_enabled : (!!formLink.url.value && isLocalAddress(formLink.url.value));
+  $("details details", formLink).open = !!link?.check_url;
+  $("#more-opts").open = !!(link && (link.description || link.icon || link.check_enabled || link.check_url));
   $('[data-act="delete"]', formLink).hidden = !link;
+  $("#name-hint").hidden = !!link;
   setError(formLink);
   updatePreview();
   dlgLink.showModal();
-  formLink.name.focus();
+  (formLink.url.value && !link ? formLink.name : link ? formLink.name : formLink.url).focus();
+  if (!link && formLink.url.value && !formLink.name.value) fetchTitle();
 }
+
+let titleTimer = null, titleFor = "";
+function fetchTitle() {
+  clearTimeout(titleTimer);
+  const url = formLink.url.value.trim();
+  if (nameTouched || linkEditId || !url || url === titleFor || !/\w\.\w|:\d/.test(url)) return;
+  titleTimer = setTimeout(async () => {
+    titleFor = url;
+    formLink.name.placeholder = "Titel ophalen…";
+    try {
+      const info = await api("GET", `/api/page-info?url=${encodeURIComponent(url)}`);
+      if (!nameTouched && formLink.url.value.trim() === url) {
+        formLink.name.value = info.title || "";
+        formLink.name.placeholder = info.title ? "" : hostOf(info.url).replace(/^www\./, "");
+        updatePreview();
+      }
+    } catch { formLink.name.placeholder = ""; }
+  }, 500);
+}
+formLink.url.addEventListener("input", () => {
+  titleFor = "";
+  fetchTitle();
+  if (!checkTouched && !linkEditId) formLink.check_enabled.checked = !!formLink.url.value.trim() && isLocalAddress(formLink.url.value.trim());
+});
+formLink.name.addEventListener("input", () => (nameTouched = formLink.name.value.trim() !== ""));
+formLink.check_enabled.addEventListener("change", () => (checkTouched = true));
 
 let previewTimer = null;
 function updatePreview() {
@@ -599,19 +645,23 @@ formLink.addEventListener("submit", async e => {
     check_enabled: formLink.check_enabled.checked,
     check_url: formLink.check_url.value.trim(),
   };
-  if (!body.name) return setError(formLink, "Geef de link een naam.");
   if (!body.url) return setError(formLink, "Vul het adres in.");
   try {
+    const wasNew = !linkEditId;
     if (linkEditId) await api("PUT", `/api/links/${linkEditId}`, body);
     else await api("POST", "/api/links", body);
     dlgLink.close();
+    if (afterSave) { const go = afterSave; afterSave = null; toast("Opgeslagen in Linker"); setTimeout(() => location.replace(go), 600); return; }
     await reload();
+    const sec = findSection(body.section_id);
+    if (wasNew && sec && sec.c.id !== currentId) openCollection(sec.c.id);
+    if (wasNew) toast(`Opgeslagen in ${sec ? sec.c.name : "Linker"}`);
     setTimeout(pollStatus, 2500);
   } catch (err) { setError(formLink, err.message); }
 });
 $('[data-act="delete"]', formLink).addEventListener("click", async () => {
   const link = findLink(linkEditId)?.l;
-  if (!link || !confirm(`${link.name} verwijderen?`)) return;
+  if (!link || !confirm(`Snelkoppeling ${link.name} verwijderen?`)) return;
   try { await api("DELETE", `/api/links/${linkEditId}`); dlgLink.close(); await reload(); }
   catch (err) { setError(formLink, err.message); }
 });
@@ -625,9 +675,9 @@ async function openName(kind, id) {
   nameCtx = { kind, id: id || null };
   const isCol = kind === "collection";
   const item = id ? (isCol ? cols().find(c => c.id === id) : findSection(id)?.s) : null;
-  $("#dlg-name-title").textContent = (item ? (isCol ? "Collectie" : "Sectie") + " bewerken" : (isCol ? "Collectie" : "Sectie") + " toevoegen");
+  $("#dlg-name-title").textContent = (item ? (isCol ? "Categorie" : "Sectie") + " bewerken" : (isCol ? "Categorie" : "Sectie") + " toevoegen");
   formName.name.value = item?.name || "";
-  formName.name.placeholder = isCol ? "Media" : "Downloads";
+  formName.name.placeholder = isCol ? "Hobby" : "Tools";
   formName.icon.value = isCol ? item?.icon || "" : "";
   $("#name-icon-row").hidden = !isCol;
   $("#name-collection-row").hidden = isCol || !item;
@@ -663,12 +713,12 @@ $('[data-act="delete"]', formName).addEventListener("click", async () => {
   if (kind === "collection") {
     const c = cols().find(x => x.id === id);
     const n = c.sections.reduce((sum, s) => sum + s.links.length, 0);
-    if (!confirm(`Collectie ${c.name} verwijderen?${n ? ` De ${n} links erin worden ook verwijderd.` : ""}`)) return;
+    if (!confirm(`Categorie ${c.name} verwijderen?${n ? ` De ${n} snelkoppelingen erin worden ook verwijderd.` : ""}`)) return;
     try { await api("DELETE", `/api/collections/${id}`); dlgName.close(); currentId = null; await reload(); }
     catch (err) { setError(formName, err.message); }
   } else {
     const s = findSection(id).s;
-    if (!confirm(`Sectie ${s.name} verwijderen?${s.links.length ? ` De ${s.links.length} links erin worden ook verwijderd.` : ""}`)) return;
+    if (!confirm(`Sectie ${s.name} verwijderen?${s.links.length ? ` De ${s.links.length} snelkoppelingen erin worden ook verwijderd.` : ""}`)) return;
     try { await api("DELETE", `/api/sections/${id}`); dlgName.close(); await reload(); }
     catch (err) { setError(formName, err.message); }
   }
@@ -824,12 +874,12 @@ $("#import-file").addEventListener("change", async e => {
   if (!file) return;
   try {
     const info = await api("POST", "/api/import/inspect", file, true);
-    const what = `${info.links} links in ${info.collections} ${info.collections === 1 ? "collectie" : "collecties"}`;
+    const what = `${info.links} snelkoppelingen in ${info.collections} ${info.collections === 1 ? "categorie" : "categorieën"}`;
     let mode = "append";
     if (info.replace) {
-      if (!confirm(`Linker-back-up met ${what}.\n\nOK vervangt al je huidige links en instellingen. Annuleren voegt de back-up toe zonder iets te verwijderen.`)) mode = "append";
+      if (!confirm(`Linker-back-up met ${what}.\n\nOK vervangt al je huidige snelkoppelingen en instellingen. Annuleren voegt de back-up toe zonder iets te verwijderen.`)) mode = "append";
       else mode = "replace";
-    } else if (!confirm(`${info.kind}: ${what}. Toevoegen als nieuwe ${info.collections === 1 ? "collectie" : "collecties"}?`)) {
+    } else if (!confirm(`${info.kind}: ${what}. Toevoegen als nieuwe ${info.collections === 1 ? "categorie" : "categorieën"}?`)) {
       return;
     }
     const res = await api("POST", `/api/import?mode=${mode}`, file, true);
@@ -840,9 +890,54 @@ $("#import-file").addEventListener("change", async e => {
     applySettings();
     render();
     pollStatus();
-    toast(`${res.links} links geïmporteerd uit ${res.kind}`);
+    toast(`${res.links} snelkoppelingen geïmporteerd uit ${res.kind}`);
   } catch (err) { setError(formSettings, err.message); }
 });
+
+/* ================================================================ snel toevoegen */
+const URLISH = /^(https?:\/\/\S+|[\w-]+(\.[\w-]+)+(:\d+)?(\/\S*)?|(\d{1,3}\.){3}\d{1,3}(:\d+)?(\/\S*)?)$/i;
+
+// Ctrl+V met een adres ergens op de pagina (niet in een invoerveld)
+document.addEventListener("paste", e => {
+  if (document.querySelector("dialog[open]")) return;
+  const tag = document.activeElement?.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA") return;
+  const text = (e.clipboardData?.getData("text") || "").trim();
+  if (!URLISH.test(text)) return;
+  e.preventDefault();
+  openLink(null, null, { url: text });
+});
+
+// Een link of adres uit een ander tabblad of de adresbalk op de pagina laten vallen
+document.addEventListener("dragover", e => {
+  if (drag || !e.dataTransfer?.types.includes("text/uri-list")) return;
+  e.preventDefault();
+  document.body.classList.add("drop-url");
+});
+document.addEventListener("dragleave", e => { if (!e.relatedTarget) document.body.classList.remove("drop-url"); });
+document.addEventListener("drop", e => {
+  document.body.classList.remove("drop-url");
+  if (drag || !e.dataTransfer?.types.includes("text/uri-list")) return;
+  e.preventDefault();
+  const url = e.dataTransfer.getData("text/uri-list").split("\n").find(l => l && !l.startsWith("#"))?.trim();
+  if (!url) return;
+  const sec = e.target.closest?.(".section");
+  openLink(null, sec ? Number(sec.dataset.sid) : null, { url });
+}, true);
+
+// Bladwijzer-knop: opent Linker met ?add=<adres>&title=<titel>&back=1
+$("#bookmarklet").href = `javascript:(()=>{location.href=${JSON.stringify(location.origin + "/?add=")}+encodeURIComponent(location.href)+"&title="+encodeURIComponent(document.title)+"&back=1"})()`;
+$("#bookmarklet").addEventListener("click", e => { e.preventDefault(); toast("Sleep deze knop naar je bladwijzerbalk."); });
+
+function handleAddParam() {
+  const p = new URLSearchParams(location.search);
+  const url = p.get("add");
+  if (!url) return;
+  history.replaceState(null, "", location.pathname + location.hash);
+  if (p.get("back") === "1" && /^https?:\/\//i.test(url)) afterSave = url;
+  openLink(null, null, { url, name: (p.get("title") || "").slice(0, 80) });
+  dlgLink.addEventListener("close", () => { if (afterSave) { const go = afterSave; afterSave = null; location.replace(go); } }, { once: true });
+}
 
 /* ================================================================ start */
 applySettings();
@@ -853,3 +948,4 @@ window.addEventListener("hashchange", () => {
   if (id && id !== currentId && cols().some(c => c.id === id)) openCollection(id);
 });
 if (matchMedia("(pointer: fine)").matches) q.focus();
+handleAddParam();

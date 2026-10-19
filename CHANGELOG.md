@@ -5,6 +5,21 @@ Versienummers volgen [Semantic Versioning](https://semver.org/lang/nl/): het mid
 
 Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt bij het opstarten automatisch bijgewerkt en je links blijven bewaard.
 
+## [0.2.0] - 2026-10-19
+
+### Toegevoegd
+- **Snel snelkoppelingen toevoegen**: een knop *+ Snelkoppeling* naast de zoekbalk. Vul alleen het adres in; de naam wordt automatisch de titel van de pagina (voor de voorpagina van een site de korte sitenaam).
+- **Plakken en slepen**: plak een adres met Ctrl+V ergens op de pagina, of sleep een link of het adres uit een ander tabblad op de pagina. Het toevoegvenster opent dan met het adres al ingevuld.
+- **Bladwijzer-knop "+ Naar Linker"** (in *Instellingen*): sleep hem naar je bladwijzerbalk en bewaar elke website met één klik. Na het opslaan ga je terug naar de pagina.
+- Bij de eerste start staan de categorieën **Privé** en **Werk** klaar.
+
+### Gewijzigd
+- *Collecties* heten nu **categorieën** en links heten **snelkoppelingen**. De zijbalk heeft het kopje *Categorieën*.
+- Het toevoegvenster is korter: adres, naam en categorie staan bovenaan; omschrijving, icoon en online-controle zitten onder *Meer opties*.
+- Na het toevoegen spring je naar de categorie waar de snelkoppeling in staat.
+- De online-controle staat voor nieuwe snelkoppelingen alleen standaard aan bij adressen in je thuisnetwerk (IP-adres, `.lan`, `.local` en dergelijke). Bestaande snelkoppelingen houden hun instelling.
+- Onder een snelkoppeling staat het adres zonder `www.`.
+
 ## [0.1.0] - 2026-10-19
 
 ### Toegevoegd
@@ -22,4 +37,5 @@ Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt
 - Installeerbaar als app (PWA).
 - Docker-image voor amd64 en arm64 via GitHub Actions, met PUID/PGID.
 
+[0.2.0]: https://github.com/RichrdJ/linker/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/RichrdJ/linker/releases/tag/v0.1.0

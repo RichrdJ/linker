@@ -1,6 +1,6 @@
 # Linker
 
-Een lichte, zelf-gehoste startpagina en linkbeheerder voor je homelab. Je links staan in **collecties** (Homelab, Thuis, Werk…), elk met eigen **secties** vol kaarten. Iconen verschijnen vanzelf, een bolletje laat zien of een dienst bereikbaar is, en de zoekbalk doorzoekt alles tegelijk.
+Een lichte, zelf-gehoste verzamelplek voor je snelkoppelingen. Verdeel ze over **categorieën** in de zijbalk, zoals *Privé* en *Werk*, en binnen een categorie over secties. Toevoegen gaat snel: plak een adres, sleep een link uit een ander tabblad, of bewaar een website met één klik vanuit je bladwijzerbalk.
 
 Alles draait in één container met SQLite. De pagina laadt geen scripts, fonts of trackers van buitenaf, dus hij werkt ook zonder internet. Alle instellingen doe je in de app zelf; in Portainer hoef je niets in te vullen.
 
@@ -8,26 +8,26 @@ Alles draait in één container met SQLite. De pagina laadt geen scripts, fonts 
 
 ## Functies
 
-- **Collecties → secties → links.** Collecties staan in de zijbalk; wisselen met een klik of `Alt`+`1` tot `9`. Linker onthoudt waar je was.
-- **Direct bewerken op de pagina.** Beweeg over een kaart of sectie voor de knoppen (bewerken, adres kopiëren, A-Z sorteren). Sleep kaarten, secties en collecties om de volgorde te wijzigen. Laat een kaart of sectie op een collectie in de zijbalk vallen om hem te verplaatsen.
+- **Categorieën → secties → snelkoppelingen.** Bij de eerste start staan *Privé* en *Werk* klaar. Wisselen met een klik of `Alt`+`1` tot `9`; Linker onthoudt waar je was.
+- **Snel toevoegen**, op vier manieren:
+  - de knop **+ Snelkoppeling**: vul alleen het adres in, de naam wordt de titel van de pagina;
+  - **plak** een adres met `Ctrl`+`V` ergens op de pagina;
+  - **sleep** een link of het adres uit een ander tabblad op de pagina (of op een sectie);
+  - de **bladwijzer-knop "+ Naar Linker"** (te vinden in *Instellingen*): sleep hem naar je bladwijzerbalk en bewaar elke website met één klik. Na het opslaan ga je terug naar de pagina.
+- **Ordenen**: sleep snelkoppelingen, secties en categorieën om de volgorde te wijzigen. Laat een snelkoppeling of sectie op een categorie in de zijbalk vallen om hem te verplaatsen. Een sectie sorteer je met één klik van A tot Z.
 - **Zoeken met het toetsenbord**: begin gewoon met typen of druk op `/`.
-  - Doorzoekt alle collecties tegelijk (naam, omschrijving en adres).
+  - Doorzoekt alle categorieën tegelijk (naam, omschrijving en adres).
   - `Enter` opent de beste treffer, `↑` `↓` kiest een andere, `Esc` wist.
   - `Shift`+`Enter` zoekt op het web: DuckDuckGo, Google, Startpage, Bing, Brave, Kagi, Ecosia of een eigen zoekmachine.
-  - Typ je een adres zoals `nas.lan:5000`, dan opent `Enter` dat direct.
-- **Iconen** zonder gedoe. Het veld *Icoon* kan zijn:
-  - leeg: de favicon van de site zelf. Linker haalt die op vanaf de server, dus het werkt ook voor diensten in je thuisnetwerk;
-  - een appnaam zoals `sonarr`, `plex` of `home-assistant`: uit [dashboard-icons](https://github.com/homarr-labs/dashboard-icons), anders [selfh.st/icons](https://github.com/selfhst/icons). Met `di:` of `sh:` ervoor kies je de bron zelf;
-  - een zelf geüpload bestand (PNG, SVG, ICO, JPG of WebP);
-  - een afbeeldingsadres (`https://…`) of een emoji.
-
-  Iconen worden in `/config` bewaard en daarna lokaal geserveerd. Lukt het niet, dan krijg je een gekleurde tegel met de eerste letter.
-- **Bereikbaarheid**: Linker controleert periodiek elke link en toont een groen of rood bolletje; een collectie met een onbereikbare dienst krijgt een rood bolletje in de zijbalk. 401/403 telt als bereikbaar (de dienst draait, je bent alleen niet ingelogd). Zelfondertekende certificaten zijn geen probleem. Per link kun je een apart controle-adres opgeven, bijvoorbeeld `http://sonarr:8989` als de link zelf via je domein loopt.
+- **Iconen** zonder gedoe: automatisch het icoon van de site (ook voor diensten in je thuisnetwerk), of een appnaam zoals `outlook` of `plex` uit [dashboard-icons](https://github.com/homarr-labs/dashboard-icons) / [selfh.st/icons](https://github.com/selfhst/icons), een eigen upload, een afbeeldingsadres of een emoji. Iconen worden in `/config` bewaard.
+- **Online-controle** (optioneel per snelkoppeling): een groen of rood bolletje, ook op de categorie in de zijbalk. Staat standaard aan voor adressen in je thuisnetwerk.
 - **Uiterlijk**: licht, donker, OLED of automatisch, een eigen accentkleur, normale of compacte kaarten, en een eigen achtergrondafbeelding.
-- **Importeren** van een ctrlTAB-back-up, een Linkwarden-export of de bladwijzers uit je browser (HTML-export uit Chrome, Firefox, Edge of Safari; elke map wordt een sectie). Geïmporteerde links worden niet op bereikbaarheid gecontroleerd; zet dat per link aan als je wilt.
+- **Importeren** van de bladwijzers uit je browser (HTML-export uit Chrome, Firefox, Edge of Safari; elke map wordt een sectie), een ctrlTAB-back-up of een Linkwarden-export.
 - **Back-up** downloaden en terugzetten als JSON.
-- **Bewerken beveiligen** met een optioneel wachtwoord. De startpagina blijft voor iedereen bruikbaar; alleen wijzigen vraagt om het wachtwoord.
+- **Bewerken beveiligen** met een optioneel wachtwoord. Openen en zoeken blijft voor iedereen mogelijk; alleen wijzigen vraagt om het wachtwoord.
 - **Installeerbaar als app** (PWA) op telefoon en desktop.
+
+![Snelkoppeling toevoegen](docs/images/toevoegen-dark.png)
 
 ![Zoeken](docs/images/zoeken-dark.png)
 
@@ -85,13 +85,13 @@ Open daarna http://localhost:5656.
 
 Alle wijzigingen per versie staan in [CHANGELOG.md](CHANGELOG.md) en onder [Releases](https://github.com/RichrdJ/linker/releases). Het versienummer van je installatie staat onderaan *Instellingen*.
 
-- `:latest` volgt `main`, `:0.1.0` is een vaste versie.
-- Wil je zelf bepalen wanneer je updatet? Zet dan een vast versienummer in `portainer-stack.yml`, bijvoorbeeld `:0.1.0`.
+- `:latest` volgt `main`, `:0.2.0` is een vaste versie.
+- Wil je zelf bepalen wanneer je updatet? Zet dan een vast versienummer in `portainer-stack.yml`, bijvoorbeeld `:0.2.0`.
 
 **Nieuwe versie uitbrengen:** werk `CHANGELOG.md` en `app/VERSION` bij, commit, en push met een tag:
 
 ```bash
-git tag -a v0.2.0 -m "v0.2.0" && git push && git push --tags
+git tag -a v0.3.0 -m "v0.3.0" && git push && git push --tags
 ```
 
-GitHub Actions bouwt dan de image `:0.2.0` en maakt de release aan met de tekst uit de changelog.
+GitHub Actions bouwt dan de image `:0.3.0` en maakt de release aan met de tekst uit de changelog.

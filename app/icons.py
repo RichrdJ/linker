@@ -15,7 +15,7 @@ import os
 import re
 import time
 from html.parser import HTMLParser
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 import httpx
 
@@ -184,3 +184,59 @@ def clear(spec, page_url):
         path = os.path.join(ICON_DIR, f"{key}.{ext}")
         if os.path.exists(path):
             os.remove(path)
+
+
+class _Title(HTMLParser):
+    """Eerste <title> van de pagina plus og:site_name / og:title."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.site = ""
+        self.og = ""
+        self.title = ""
+        self.in_title = False
+        self.done = False   # alleen de eerste <title>; SVG-iconen hebben er ook een
+
+    def handle_starttag(self, tag, attrs):
+        a = {k.lower(): (v or "") for k, v in attrs}
+        prop = (a.get("property") or a.get("name") or "").lower()
+        if tag == "meta" and prop == "og:site_name" and not self.site:
+            self.site = a.get("content", "")
+        elif tag == "meta" and prop == "og:title" and not self.og:
+            self.og = a.get("content", "")
+        elif tag == "title" and not self.done:
+            self.in_title = True
+
+    def handle_endtag(self, tag):
+        if tag == "title" and self.in_title:
+            self.in_title, self.done = False, True
+
+    def handle_data(self, data):
+        if self.in_title:
+            self.title += data
+
+
+SEPARATORS = re.compile(r"\s+[|·•–—-]\s+")
+
+
+async def page_title(url):
+    """Naam voor een nieuwe snelkoppeling, of '' als dat niet lukt.
+    Voor de voorpagina van een site de sitenaam (kort), voor een diepere pagina de paginatitel."""
+    try:
+        async with httpx.AsyncClient(timeout=6, follow_redirects=True, verify=False, headers=HEADERS) as client:
+            r = await client.get(url)
+            if "html" not in r.headers.get("content-type", "html"):
+                return ""
+            p = _Title()
+            p.feed(r.text[:300_000])
+    except (httpx.HTTPError, ValueError) as e:
+        log.debug("titel %s: %s", url, e)
+        return ""
+    clean = lambda t: " ".join((t or "").split())
+    title, site = clean(p.title) or clean(p.og), clean(p.site)
+    is_root = urlparse(str(r.url)).path in ("", "/") and not urlparse(str(r.url)).query
+    if is_root:
+        name = site or (SEPARATORS.split(title)[0] if title else "")
+    else:
+        name = title or site
+    return name[:80]
