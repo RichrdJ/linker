@@ -317,3 +317,8 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
 .side-kbd { margin-left: auto; font: 11px/18px var(--font); padding: 0 6px; border: 1px solid var(--line); border-radius: 4px; color: var(--faint); }
 .topbar + .col-head { margin-top: 10px; }
 @media (max-width: 760px) { .side-kbd { display: none; } }
+
+/* Potlood naast de categorienaam alleen bij hover (op touchscreens altijd zichtbaar) */
+#edit-collection { opacity: 0; transition: opacity .12s; }
+.col-head:hover #edit-collection, #edit-collection:focus-visible { opacity: 1; }
+@media (hover: none) { #edit-collection { opacity: 1; } }
