@@ -25,7 +25,7 @@ Alles draait in één container met SQLite. De pagina laadt geen scripts, fonts 
 - **Uiterlijk**: optioneel iconen bij de categorieën; licht, donker, OLED of automatisch, een eigen accentkleur, normale of compacte kaarten, en een eigen achtergrondafbeelding.
 - **Importeren** van de bladwijzers uit je browser (HTML-export uit Chrome, Firefox, Edge of Safari; elke map wordt een sectie), een ctrlTAB-back-up of een Linkwarden-export.
 - **Back-up** downloaden en terugzetten als JSON.
-- **Bewerken beveiligen** met een optioneel wachtwoord. Openen en zoeken blijft voor iedereen mogelijk; alleen wijzigen vraagt om het wachtwoord.
+- **Beveiligen** met een wachtwoord: alleen bewerken afschermen, of met **Inloggen verplicht** de hele startpagina achter een loginpagina zetten, zodat je Linker veilig via internet kunt gebruiken.
 - **Installeerbaar als app** (PWA) op telefoon en desktop.
 
 ![Snelkoppeling toevoegen](docs/images/toevoegen-dark.png)
@@ -60,7 +60,23 @@ docker compose up -d --build
 
 ### Als startpagina van je browser
 
-Stel `http://<server>:5656` in als startpagina en als pagina voor nieuwe tabbladen (in Chrome en Firefox kan dat laatste met een extensie zoals *New Tab Redirect*). Wil je Linker buiten je thuisnetwerk gebruiken, zet er dan een reverse proxy met HTTPS voor, bijvoorbeeld Nginx Proxy Manager, Traefik of Caddy, en stel een wachtwoord in.
+Stel `http://<server>:5656` in als startpagina en als pagina voor nieuwe tabbladen (in Chrome en Firefox kan dat laatste met een extensie zoals *New Tab Redirect*).
+
+### Via internet bereikbaar maken
+
+1. Zet er een reverse proxy met HTTPS voor, bijvoorbeeld Nginx Proxy Manager, Traefik of Caddy. Stel Linker nooit zonder HTTPS open.
+2. Open *Instellingen → Wachtwoord en inloggen*, kies een sterk wachtwoord (minstens 8 tekens, liefst een zin of een wachtwoord uit je wachtwoordmanager) en zet **Inloggen verplicht voor de hele startpagina** aan.
+3. Zet poort `5656` niet open in je router: alleen de reverse proxy hoeft Linker te bereiken.
+
+Wat Linker dan zelf doet:
+
+- Zonder login is alleen de loginpagina te zien. Alle snelkoppelingen, iconen, je achtergrond en de API vragen om een login.
+- Na 5 foute pogingen vanaf hetzelfde adres volgt een blokkade van 15 minuten. Bij meer dan 30 foute pogingen in 15 minuten worden alle logins tijdelijk geweigerd, ook als een aanvaller zijn adres vervalst.
+- Het sessiecookie is `HttpOnly` en `SameSite=Lax`, en krijgt `Secure` zodra de pagina via HTTPS binnenkomt (ook achter je proxy). Je blijft 30 dagen ingelogd, of 12 uur als je *Ingelogd blijven* uitvinkt.
+- Een nieuw wachtwoord logt alle andere apparaten uit. Met *Uitloggen* in de zijbalk log je het huidige apparaat uit.
+- De pagina mag niet in een frame van een andere site worden geladen.
+
+**Wachtwoord vergeten?** Start de container eenmalig met de omgevingsvariabele `RESET_PASSWORD=1`. Dan staan het wachtwoord en het verplicht inloggen uit. Haal de variabele daarna weer weg en stel een nieuw wachtwoord in.
 
 De database staat in het volume `linker-config` (`/config/linker.db`, met geüploade iconen en achtergrond in `/config/uploads`). Neem dat volume mee in je back-ups, of download af en toe een back-up via *Instellingen*.
 
@@ -72,6 +88,7 @@ De database staat in het volume `linker-config` (`/config/linker.db`, met geüpl
 | `PUID` / `PGID` | (root) | Gebruiker/groep die eigenaar wordt van `/config` |
 | `PORT` | `5656` | Poort binnen de container |
 | `LOG_LEVEL` | `INFO` | |
+| `RESET_PASSWORD` | – | `1` = wachtwoord en verplicht inloggen uitzetten bij het starten (wachtwoord vergeten) |
 
 ## Lokaal ontwikkelen
 

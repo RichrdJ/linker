@@ -207,11 +207,13 @@
     </fieldset>
 
     <fieldset>
-      <legend>Bewerken beveiligen</legend>
+      <legend>Wachtwoord en inloggen</legend>
       <p class="help" id="pw-state"></p>
       <div class="fields">
-        <label>Nieuw wachtwoord<input name="new_password" type="password" autocomplete="new-password"></label>
+        <label>Nieuw wachtwoord <span class="opt">(min. 8 tekens)</span><input name="new_password" type="password" autocomplete="new-password" minlength="8" maxlength="200"></label>
         <label class="check" id="pw-remove"><input type="checkbox" name="remove_password"> Wachtwoord verwijderen</label>
+        <label class="check wide"><input type="checkbox" name="require_login"> Inloggen verplicht voor de hele startpagina</label>
+        <p class="help wide">Zet dit aan als Linker via internet bereikbaar is. Zonder login ziet dan niemand je snelkoppelingen. Gebruik daarbij altijd HTTPS, bijvoorbeeld via een reverse proxy.</p>
       </div>
     </fieldset>
 

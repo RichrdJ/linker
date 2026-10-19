@@ -5,6 +5,22 @@ Versienummers volgen [Semantic Versioning](https://semver.org/lang/nl/): het mid
 
 Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt bij het opstarten automatisch bijgewerkt en je links blijven bewaard.
 
+## [0.5.0] - 2026-10-19
+
+### Toegevoegd
+- **Loginpagina**: zet *Inloggen verplicht voor de hele startpagina* aan onder *Instellingen → Wachtwoord en inloggen*. Zonder login is dan alleen een nette loginpagina te zien, dus je kunt Linker via een reverse proxy met HTTPS aan internet koppelen. Kies of je 30 dagen ingelogd blijft of na 12 uur wordt uitgelogd. Uitloggen kan onderin de zijbalk.
+- **Bescherming tegen raden**: na 5 foute pogingen vanaf hetzelfde adres volgt een blokkade van 15 minuten. Bij meer dan 30 foute pogingen in totaal binnen 15 minuten worden alle logins tijdelijk geweigerd. Mislukte pogingen komen in het log.
+- Het sessiecookie krijgt automatisch de vlag *Secure* als Linker via HTTPS wordt geopend. Extra beveiligingsheaders, en met verplicht inloggen mag de pagina niet in een frame van een andere site worden geladen.
+- **Wachtwoord vergeten**: start de container eenmalig met `RESET_PASSWORD=1`.
+
+### Gewijzigd
+- Een nieuw wachtwoord moet minstens 8 tekens hebben. Je huidige wachtwoord blijft gewoon werken.
+- Na een nieuw wachtwoord zijn alle andere apparaten uitgelogd.
+- Een back-up terugzetten verandert niets aan het verplicht inloggen.
+
+### Migratie
+- Had je bewerken al beveiligd met een wachtwoord? Dan moet je na de update op elk apparaat één keer opnieuw ontgrendelen.
+
 ## [0.4.1] - 2026-10-19
 
 ### Gewijzigd
@@ -104,6 +120,7 @@ Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt
 - Installeerbaar als app (PWA).
 - Docker-image voor amd64 en arm64 via GitHub Actions, met PUID/PGID.
 
+[0.5.0]: https://github.com/RichrdJ/linker/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/RichrdJ/linker/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/RichrdJ/linker/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/RichrdJ/linker/compare/v0.3.0...v0.3.1

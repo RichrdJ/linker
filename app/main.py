@@ -3,20 +3,23 @@ import hmac
 import ipaddress
 import logging
 import os
+import math
 import re
 import secrets
+import time
 from contextlib import asynccontextmanager
 from datetime import date
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlencode, urlparse
 
 from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
+from starlette.concurrency import run_in_threadpool
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import appicon, db, icons, importers, status
+from . import appicon, auth, db, icons, importers, status
 
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"),
                     format="%(asctime)s %(levelname)s %(message)s")
@@ -51,19 +54,25 @@ def _secret_key():
 @asynccontextmanager
 async def lifespan(_app):
     db.init()
+    if os.environ.get("RESET_PASSWORD") == "1":   # wachtwoord vergeten: eenmalig starten met RESET_PASSWORD=1
+        db.set_settings({"password_hash": "", "require_login": "0"})
+        logging.warning("RESET_PASSWORD=1: wachtwoord en verplicht inloggen zijn uitgezet. Haal de variabele weer weg.")
     status.start()
     yield
     await status.stop()
 
 
 app = FastAPI(title="Linker", lifespan=lifespan, docs_url=None, redoc_url=None)
-app.add_middleware(SessionMiddleware, secret_key=_secret_key(), session_cookie="linker",
-                   max_age=90 * 24 * 3600, same_site="lax", https_only=False)
-app.mount("/static", StaticFiles(directory=os.path.join(HERE, "static")), name="static")
 templates = Jinja2Templates(directory=os.path.join(HERE, "templates"))
 
 
-# ---------------------------------------------------------------- wachtwoord
+# ---------------------------------------------------------------- wachtwoord en sessie
+
+PASSWORD_MIN = 8
+SESSION_LONG = 30 * 24 * 3600    # "ingelogd blijven"
+SESSION_SHORT = 12 * 3600
+guard = auth.LoginGuard()
+
 
 def hash_password(pw: str) -> str:
     salt = secrets.token_hex(16)
@@ -80,12 +89,82 @@ def verify_password(pw: str, stored: str) -> bool:
         return False
 
 
+def password_hash() -> str:
+    return db.settings(include_secret=True).get("password_hash") or ""
+
+
 def locked() -> bool:
-    return bool(db.settings(include_secret=True).get("password_hash"))
+    return bool(password_hash())
+
+
+def login_required() -> bool:
+    """De hele startpagina zit achter de login (kan alleen met een wachtwoord)."""
+    s = db.settings(include_secret=True)
+    return s.get("require_login") == "1" and bool(s.get("password_hash"))
+
+
+def _session_tag(stored: str) -> str:
+    # Hoort bij het huidige wachtwoord: na een nieuw wachtwoord is iedereen uitgelogd
+    return hashlib.sha256(("linker-session:" + stored).encode()).hexdigest()[:32]
+
+
+def logged_in(request: Request) -> bool:
+    stored = password_hash()
+    if not stored:
+        return False
+    s = request.session
+    try:
+        fresh = float(s.get("exp", 0)) > time.time()
+    except (TypeError, ValueError):
+        fresh = False
+    return fresh and hmac.compare_digest(str(s.get("auth", "")), _session_tag(stored))
+
+
+def start_session(request: Request, stored: str, remember: bool = True):
+    request.session.clear()
+    request.session.update(auth=_session_tag(stored), exp=time.time() + (SESSION_LONG if remember else SESSION_SHORT))
+
+
+def client_ip(request: Request) -> str:
+    return request.client.host if request.client else "onbekend"
 
 
 def can_edit(request: Request) -> bool:
-    return not locked() or bool(request.session.get("edit"))
+    return not locked() or logged_in(request)
+
+
+# ---------------------------------------------------------------- toegang tot de hele pagina
+
+# Ook zonder login bereikbaar: de loginpagina zelf, wat die nodig heeft en de healthcheck
+PUBLIC_PATHS = {"/login", "/logout", "/favicon.svg", "/icon-192.png", "/icon-512.png",
+                "/manifest.webmanifest", "/healthz", "/health"}
+SECURITY_HEADERS = {"X-Content-Type-Options": "nosniff", "Referrer-Policy": "same-origin"}
+NO_FRAMES = {"X-Frame-Options": "DENY"}
+
+
+async def gate(request: Request, call_next):
+    path = request.url.path
+    required = login_required()
+    if required and path not in PUBLIC_PATHS and not path.startswith("/static/") and not logged_in(request):
+        if request.method == "GET" and not path.startswith("/api/"):
+            target = path + ("?" + request.url.query if request.url.query else "")
+            response = RedirectResponse("/login" + ("?" + urlencode({"next": target}) if target != "/" else ""),
+                                        status_code=303)
+        else:
+            response = JSONResponse({"detail": "Log eerst in.", "login": True}, status_code=401)
+    else:
+        response = await call_next(request)
+    for key, value in {**SECURITY_HEADERS, **(NO_FRAMES if required else {})}.items():
+        response.headers.setdefault(key, value)
+    return response
+
+
+# Volgorde: de laatst toegevoegde draait als eerste. gate heeft de sessie nodig, dus die staat binnenin.
+app.middleware("http")(gate)
+app.add_middleware(SessionMiddleware, secret_key=_secret_key(), session_cookie="linker",
+                   max_age=90 * 24 * 3600, same_site="lax", https_only=False)
+app.add_middleware(auth.SecureCookieOnHttps, cookie_name="linker")
+app.mount("/static", StaticFiles(directory=os.path.join(HERE, "static")), name="static")
 
 
 def require_edit(request: Request):
@@ -162,6 +241,7 @@ class SettingsIn(BaseModel):
     check_interval: int | None = Field(default=None, ge=0, le=86400)
     new_password: str | None = Field(default=None, max_length=200)
     remove_password: bool | None = None
+    require_login: bool | None = None
 
 
 def _link_values(body: LinkIn):
@@ -189,6 +269,7 @@ def _state(request: Request):
         "search_url": search_url or SEARCH_ENGINES["duckduckgo"][1],
         "engines": {k: v[0] for k, v in SEARCH_ENGINES.items()},
         "locked": locked(),
+        "login_required": login_required(),
         "can_edit": can_edit(request),
         "version": APP_VERSION,
     }
@@ -534,32 +615,109 @@ def save_settings(request: Request, body: SettingsIn):
     if body.check_interval is not None:
         values["check_interval"] = str(body.check_interval if body.check_interval == 0
                                        else max(body.check_interval, 15))
+    new_hash = None
     if body.remove_password:
         values["password_hash"] = ""
-        request.session.pop("edit", None)
+        values["require_login"] = "0"   # zonder wachtwoord kan niemand meer inloggen
     elif body.new_password:
-        if len(body.new_password) < 4:
-            raise HTTPException(422, "Kies een wachtwoord van minstens 4 tekens.")
-        values["password_hash"] = hash_password(body.new_password)
-        request.session["edit"] = True
+        if len(body.new_password) < PASSWORD_MIN:
+            raise HTTPException(422, f"Kies een wachtwoord van minstens {PASSWORD_MIN} tekens.")
+        new_hash = values["password_hash"] = hash_password(body.new_password)
+    if body.require_login is not None and not body.remove_password:
+        if body.require_login and not (new_hash or password_hash()):
+            raise HTTPException(422, "Stel eerst een wachtwoord in. Zonder wachtwoord kun je niet inloggen.")
+        values["require_login"] = "1" if body.require_login else "0"
     db.set_settings(values)
+    if body.remove_password:
+        request.session.clear()
+    elif new_hash:   # nieuw wachtwoord: alle andere apparaten zijn uitgelogd, dit apparaat blijft ingelogd
+        start_session(request, new_hash)
     status.trigger()
     return _state(request)
 
 
+def _login_wait_message(wait: int) -> str:
+    minutes = max(1, math.ceil(wait / 60))
+    return f"Te veel mislukte pogingen. Probeer het over {minutes} {'minuut' if minutes == 1 else 'minuten'} opnieuw."
+
+
 @app.post("/api/login")
 def login(request: Request, body: LoginIn):
-    stored = db.settings(include_secret=True).get("password_hash")
-    if stored and not verify_password(body.password, stored):
-        raise HTTPException(401, "Dat wachtwoord klopt niet.")
-    request.session["edit"] = True
+    """Bewerken ontgrendelen vanuit de pagina (als alleen bewerken beveiligd is)."""
+    ip = client_ip(request)
+    wait = guard.wait_time(ip)
+    if wait:
+        raise HTTPException(429, _login_wait_message(wait))
+    stored = password_hash()
+    if stored:
+        if not verify_password(body.password, stored):
+            guard.failed(ip)
+            raise HTTPException(401, "Dat wachtwoord klopt niet.")
+        guard.succeeded(ip)
+        start_session(request, stored)
     return {"ok": True}
 
 
 @app.post("/api/logout")
 def logout(request: Request):
-    request.session.pop("edit", None)
+    request.session.clear()
     return {"ok": True}
+
+
+# ---------------------------------------------------------------- loginpagina
+
+LOGIN_CSP = ("default-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
+             "manifest-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'")
+
+
+def _login_page(request: Request, next_path: str, error: str = "", status_code: int = 200):
+    s = db.settings()
+    response = templates.TemplateResponse(
+        request, "login.html",
+        {"s": s, "accent_ink": appicon.ink_for(s["accent"]), "next": next_path, "error": error, "version": APP_VERSION},
+        status_code=status_code)
+    response.headers["Content-Security-Policy"] = LOGIN_CSP
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@app.get("/login")
+def login_page(request: Request, next: str = "/"):
+    target = auth.safe_next(next)
+    if not login_required() or logged_in(request):
+        return RedirectResponse(target, status_code=303)
+    return _login_page(request, target)
+
+
+@app.post("/login")
+async def login_submit(request: Request):
+    raw = await request.body()
+    if len(raw) > 8192:
+        raise HTTPException(413)
+    form = parse_qs(raw.decode("utf-8", "replace"))
+    password = (form.get("password") or [""])[0]
+    target = auth.safe_next((form.get("next") or ["/"])[0])
+    remember = (form.get("remember") or [""])[0] == "1"
+    stored = password_hash()
+    if not login_required() or not stored:
+        return RedirectResponse(target, status_code=303)
+    ip = client_ip(request)
+    wait = guard.wait_time(ip)
+    if wait:
+        return _login_page(request, target, _login_wait_message(wait), 429)
+    if not password or not await run_in_threadpool(verify_password, password, stored):
+        guard.failed(ip)
+        logging.warning("Mislukte login vanaf %s", ip)
+        return _login_page(request, target, "Dat wachtwoord klopt niet.", 401)
+    guard.succeeded(ip)
+    start_session(request, stored, remember)
+    return RedirectResponse(target, status_code=303)
+
+
+@app.post("/logout")
+def logout_page(request: Request):
+    request.session.clear()
+    return RedirectResponse("/login", status_code=303)
 
 
 # ---------------------------------------------------------------- back-up

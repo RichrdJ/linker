@@ -24,8 +24,10 @@ DEFAULT_SETTINGS = {
     "background": "",         # bestandsnaam in uploads/
     "background_dim": "1",
     "password_hash": "",
+    "require_login": "0",     # 1 = de hele startpagina zit achter de login
 }
 SECRET_SETTINGS = {"password_hash"}
+NOT_IMPORTED = SECRET_SETTINGS | {"background", "require_login"}   # een back-up zet de beveiliging niet om
 
 LINK_FIELDS = ("name", "url", "description", "icon", "check_enabled", "check_url")
 
@@ -235,7 +237,7 @@ def insert_tree(collections, replace=False, settings_in=None):
                          str(link.get("check_url") or "")[:2000], lpos))
                     counts["links"] += 1
         for k, v in (settings_in or {}).items():
-            if k in DEFAULT_SETTINGS and k not in SECRET_SETTINGS and k != "background":
+            if k in DEFAULT_SETTINGS and k not in NOT_IMPORTED:
                 conn.execute("INSERT INTO settings (key, value) VALUES (?, ?) "
                              "ON CONFLICT(key) DO UPDATE SET value = excluded.value", (k, str(v)))
     return counts

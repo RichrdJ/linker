@@ -62,7 +62,9 @@ async function api(method, url, body, raw = false) {
     if (Array.isArray(msg)) msg = msg.map(d => d.msg).join(" ");
     const err = new Error(msg || `Er ging iets mis (${res.status}).`);
     err.status = res.status;
-    if (res.status === 401) { state.can_edit = false; applyAccess(); }
+    if (res.status === 401 && data?.login) {   // sessie verlopen: terug naar de loginpagina
+      location.href = "/login?next=" + encodeURIComponent(location.pathname + location.search + location.hash);
+    } else if (res.status === 401) { state.can_edit = false; applyAccess(); }
     throw err;
   }
   return data;
@@ -249,8 +251,8 @@ function applySettings() {
 function applyAccess() {
   document.body.classList.toggle("can-edit", !!state.can_edit);
   $("#btn-lock").hidden = !state.locked;
-  $("#lock-label").textContent = $("#btn-lock").title = state.can_edit ? "Vergrendelen" : "Ontgrendelen";
-}
+  $("#lock-label").textContent = $("#btn-lock").title =
+    state.login_required ? "Uitloggen" : state.can_edit ? "Vergrendelen" : "Ontgrendelen";}
 
 function openCollection(id) {
   currentId = id;
@@ -463,6 +465,11 @@ document.addEventListener("click", async e => {
 });
 
 $("#btn-lock").addEventListener("click", async () => {
+  if (state.login_required) {   // hele pagina achter de login: uitloggen
+    try { await api("POST", "/api/logout"); } catch { /* toch naar de loginpagina */ }
+    location.href = "/login";
+    return;
+  }
   if (state.can_edit) {
     await api("POST", "/api/logout");
     await reload();
@@ -824,7 +831,10 @@ function fillSettings() {
   interval.value = s.check_interval;
   formSettings.new_password.value = "";
   formSettings.remove_password.checked = false;
-  $("#pw-state").textContent = state.locked
+  formSettings.require_login.checked = s.require_login === "1";
+  $("#pw-state").textContent = state.login_required
+    ? "Je startpagina is afgeschermd: zonder in te loggen ziet niemand je snelkoppelingen."
+    : state.locked
     ? "Bewerken is beveiligd. Iedereen kan de startpagina gebruiken, maar alleen met het wachtwoord kun je links en instellingen wijzigen."
     : "Iedereen die de startpagina opent, kan nu ook links en instellingen wijzigen. Stel een wachtwoord in om dat af te schermen.";
   $("#pw-remove").hidden = !state.locked;
@@ -860,7 +870,10 @@ formSettings.addEventListener("submit", async e => {
     check_interval: Number(formSettings.check_interval.value),
   };
   if (formSettings.remove_password.checked) body.remove_password = true;
-  else if (formSettings.new_password.value) body.new_password = formSettings.new_password.value;
+  else {
+    if (formSettings.new_password.value) body.new_password = formSettings.new_password.value;
+    body.require_login = formSettings.require_login.checked;
+  }
   try {
     state = await api("PUT", "/api/settings", body);
     settingsSnapshot = null;
