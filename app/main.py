@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import appicon, auth, db, icons, importers, status
+from . import appicon, auth, db, icons, importers, status, weather
 
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"),
                     format="%(asctime)s %(levelname)s %(message)s")
@@ -200,6 +200,7 @@ class NameIn(BaseModel):
 
 class CollectionIn(NameIn):
     icon: str = Field(default="", max_length=500)
+    accent: str = Field(default="", pattern=r"^(#[0-9a-fA-F]{6})?$")   # leeg = de algemene accentkleur
 
 
 class SectionIn(NameIn):
@@ -238,6 +239,7 @@ class SettingsIn(BaseModel):
     show_category_icons: bool | None = None
     card_size: str | None = None
     link_order: str | None = None
+    weather_place: str | None = Field(default=None, max_length=100)
     background_dim: bool | None = None
     check_interval: int | None = Field(default=None, ge=0, le=86400)
     new_password: str | None = Field(default=None, max_length=200)
@@ -338,6 +340,14 @@ def api_state(request: Request):
     return _state(request)
 
 
+@app.get("/api/weather")
+async def api_weather():
+    s = db.settings()
+    if not (s["weather_lat"] and s["weather_lon"]):
+        return {"enabled": False}
+    return await weather.current(s["weather_place"], s["weather_lat"], s["weather_lon"])
+
+
 @app.get("/api/status")
 def api_status():
     return {str(k): v for k, v in status.RESULTS.items()}
@@ -397,16 +407,16 @@ async def refresh_icon(link_id: int):
 
 @app.post("/api/collections", dependencies=[Depends(require_edit)])
 def create_collection(body: CollectionIn):
-    cid = db.execute("INSERT INTO collections (name, icon, position) VALUES (?, ?, ?)",
-                     (body.name.strip(), body.icon.strip(), db.next_position("collections")))
+    cid = db.execute("INSERT INTO collections (name, icon, accent, position) VALUES (?, ?, ?, ?)",
+                     (body.name.strip(), body.icon.strip(), body.accent.lower(), db.next_position("collections")))
     db.execute("INSERT INTO sections (collection_id, name, position) VALUES (?, ?, 0)", (cid, db.DEFAULT_SECTION))
     return {"id": cid}
 
 
 @app.put("/api/collections/{collection_id}", dependencies=[Depends(require_edit)])
 def update_collection(collection_id: int, body: CollectionIn):
-    db.execute("UPDATE collections SET name = ?, icon = ? WHERE id = ?",
-               (body.name.strip(), body.icon.strip(), collection_id))
+    db.execute("UPDATE collections SET name = ?, icon = ?, accent = ? WHERE id = ?",
+               (body.name.strip(), body.icon.strip(), body.accent.lower(), collection_id))
     return {"ok": True}
 
 
@@ -623,6 +633,16 @@ def save_settings(request: Request, body: SettingsIn):
         if body.link_order not in LINK_ORDERS:
             raise HTTPException(422, "Onbekende volgorde.")
         values["link_order"] = body.link_order
+    if body.weather_place is not None:
+        place = body.weather_place.strip()
+        if not place:
+            values.update(weather_place="", weather_lat="", weather_lon="")
+        elif place.lower() != db.settings()["weather_place"].lower():   # alleen opzoeken als de plaats verandert
+            try:
+                name, lat, lon = weather.geocode(place)
+            except weather.PlaceNotFound as e:
+                raise HTTPException(422, str(e))
+            values.update(weather_place=name, weather_lat=lat, weather_lon=lon)
     for key in ("new_tab", "show_clock", "show_subtitle", "show_category_icons", "background_dim"):
         v = getattr(body, key)
         if v is not None:

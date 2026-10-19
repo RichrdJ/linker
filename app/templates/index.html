@@ -34,6 +34,7 @@
     </nav>
 
     <p class="clock" id="clock"><time id="time"></time><span id="date"></span></p>
+    <p class="weather" id="weather" hidden aria-live="polite"></p>
 
     <div class="sidebar-foot">
       <!-- Alleen op je telefoon: daar kun je niet 'gewoon beginnen met typen' -->
@@ -128,6 +129,14 @@
     <div class="fields single">
       <label>Naam<input name="name" required maxlength="80"></label>
       <label id="name-icon-row">Icoon <span class="opt">(optioneel, bv. een emoji)</span><input name="icon" maxlength="500" placeholder="💼"></label>
+      <div id="name-accent-row">
+        <span class="field-label">Kleur <span class="opt" id="accent-state"></span></span>
+        <span class="color-row">
+          <input type="color" id="col-accent" aria-label="Kleur van deze categorie">
+          <span class="swatches" id="col-swatches"></span>
+          <button type="button" class="btn small" id="col-accent-reset">Algemene kleur</button>
+        </span>
+      </div>
       <label id="name-collection-row">Categorie<select name="collection_id"></select></label>
     </div>
     <p class="form-error" role="alert"></p>
@@ -167,6 +176,7 @@
         <label>Volgorde snelkoppelingen<select name="link_order"><option value="manual">Eigen volgorde (slepen)</option><option value="visits">Meest bezocht eerst, vanzelf</option></select></label>
         <label class="check"><input type="checkbox" name="show_subtitle"> Omschrijving of adres onder de naam</label>
         <label class="check"><input type="checkbox" name="show_clock"> Klok en datum tonen</label>
+        <label class="wide">Weer voor <span class="opt">(plaats, leeg = geen weer)</span><input name="weather_place" maxlength="100" placeholder="bv. Utrecht" autocomplete="address-level2"></label>
         <label class="check"><input type="checkbox" name="show_category_icons"> Iconen bij categorieën</label>
         <label class="check"><input type="checkbox" name="new_tab"> Links openen in een nieuw tabblad</label>
       </div>

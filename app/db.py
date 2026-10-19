@@ -1,6 +1,7 @@
 """SQLite-opslag: categorieën (tabel collections) → secties → snelkoppelingen (links), plus instellingen."""
 import json
 import os
+import re
 import sqlite3
 import threading
 
@@ -22,6 +23,9 @@ DEFAULT_SETTINGS = {
     "card_size": "normal",    # compact | normal
     "link_order": "manual",   # manual = eigen volgorde | visits = meest bezocht eerst, vanzelf
     "check_interval": "60",   # seconden, 0 = uit
+    "weather_place": "",      # plaats voor het weer in de zijbalk ('' = geen weer)
+    "weather_lat": "",
+    "weather_lon": "",
     "background": "",         # bestandsnaam in uploads/
     "background_dim": "1",
     "password_hash": "",
@@ -29,6 +33,8 @@ DEFAULT_SETTINGS = {
 }
 SECRET_SETTINGS = {"password_hash"}
 NOT_IMPORTED = SECRET_SETTINGS | {"background", "require_login"}   # een back-up zet de beveiliging niet om
+
+ACCENT_RE = re.compile(r"#[0-9a-f]{6}")
 
 LINK_FIELDS = ("name", "url", "description", "icon", "check_enabled", "check_url")
 
@@ -82,6 +88,8 @@ def init():
         # 0.6.0: hoe vaak een snelkoppeling is geopend, om op meest bezocht te sorteren
         _add_column(conn, "links", "visits", "INTEGER NOT NULL DEFAULT 0")
         _add_column(conn, "links", "last_visit", "INTEGER NOT NULL DEFAULT 0")
+        # 0.8.0: eigen accentkleur per categorie ('' = de algemene accentkleur)
+        _add_column(conn, "collections", "accent", "TEXT NOT NULL DEFAULT ''")
         for k, v in DEFAULT_SETTINGS.items():
             conn.execute("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)", (k, v))
         # 0.2.2: het oude gele standaardaccent wordt het blauw van het logo
@@ -155,7 +163,7 @@ def set_settings(values: dict):
 # ---------------------------------------------------------------- boom
 
 def tree():
-    cols = all_rows("SELECT id, name, icon FROM collections ORDER BY position, id")
+    cols = all_rows("SELECT id, name, icon, accent FROM collections ORDER BY position, id")
     secs = all_rows("SELECT id, collection_id, name FROM sections ORDER BY position, id")
     links = all_rows("SELECT * FROM links ORDER BY position, id")
     by_sec = {s["id"]: {**s, "links": []} for s in secs}
@@ -220,7 +228,7 @@ def first_section(collection_id):
 def export_data():
     return {"app": "linker", "version": 1, "settings": {k: v for k, v in settings().items() if k != "background"},
             "collections": [
-                {"name": c["name"], "icon": c["icon"], "sections": [
+                {"name": c["name"], "icon": c["icon"], "accent": c["accent"], "sections": [
                     {"name": s["name"], "links": [{k: link[k] for k in LINK_FIELDS} for link in s["links"]]}
                     for s in c["sections"]]}
                 for c in tree()]}
@@ -234,9 +242,10 @@ def insert_tree(collections, replace=False, settings_in=None):
             conn.execute("DELETE FROM collections")
         start = conn.execute("SELECT COALESCE(MAX(position), -1) + 1 FROM collections").fetchone()[0]
         for cpos, col in enumerate(collections):
-            cid = conn.execute("INSERT INTO collections (name, icon, position) VALUES (?, ?, ?)",
+            accent = str(col.get("accent") or "").lower()
+            cid = conn.execute("INSERT INTO collections (name, icon, accent, position) VALUES (?, ?, ?, ?)",
                                (str(col.get("name") or "Collectie")[:80], str(col.get("icon") or "")[:500],
-                                start + cpos)).lastrowid
+                                accent if ACCENT_RE.fullmatch(accent) else "", start + cpos)).lastrowid
             counts["collections"] += 1
             for spos, sec in enumerate(col.get("sections") or []):
                 sid = conn.execute("INSERT INTO sections (collection_id, name, position) VALUES (?, ?, ?)",

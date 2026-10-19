@@ -121,6 +121,14 @@ button, input, select { font: inherit; color: inherit; }
 .clock { margin: 0; padding: 0 22px 12px; display: flex; flex-direction: column; gap: 1px; color: var(--faint); font-size: 12px; white-space: nowrap; overflow: hidden; }
 .clock time { font-size: 18px; font-weight: 300; color: var(--muted); font-variant-numeric: tabular-nums; letter-spacing: .01em; }
 #date::first-letter { text-transform: uppercase; }
+/* Weer: klein onder de klok */
+.weather { margin: -4px 0 0; padding: 0 22px 12px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--faint); white-space: nowrap; overflow: hidden; }
+.wx-icon { flex: none; width: 16px; height: 16px; fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.wx-temp { color: var(--muted); font-weight: 500; font-variant-numeric: tabular-nums; }
+.wx-text { overflow: hidden; text-overflow: ellipsis; }
+.side-collapsed .weather { flex-direction: column; gap: 2px; padding: 0 0 10px; margin-top: -6px; }
+.side-collapsed .wx-text { display: none; }
+@media (max-width: 760px) { .weather { display: none !important; } }
 .side-collapsed .clock { padding: 0 0 10px; align-items: center; }
 .side-collapsed .clock time { font-size: 13px; }
 .side-collapsed #date { display: none; }
@@ -276,6 +284,9 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
 .color-row { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
 .color-row input[type=color] { width: 38px; height: 38px; padding: 2px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); cursor: pointer; }
 .swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+.swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--fg); }
+.dlg .field-label { display: block; font-size: 13px; color: var(--muted); }
+.btn.small { height: 30px; padding: 0 10px; font-size: 13px; }
 .swatch { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--line); cursor: pointer; padding: 0; }
 .dlg .file-btn { display: inline-flex; color: var(--fg); font-size: 14px; }
 .form-error { margin: 12px 0 0; color: var(--down); font-size: 13px; }

@@ -5,6 +5,15 @@ Versienummers volgen [Semantic Versioning](https://semver.org/lang/nl/): het mid
 
 Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt bij het opstarten automatisch bijgewerkt en je links blijven bewaard.
 
+## [0.8.0] - 2026-10-19
+
+### Toegevoegd
+- **Eigen kleur per categorie**: kies bij het bewerken van een categorie (het potlood in de zijbalk) een kleur, of laat hem de algemene accentkleur volgen. Open je die categorie, dan kleuren de knoppen, de selecties, het logo en het icoon in je browsertabblad mee. In de zijbalk krijgt elke categorie haar eigen tint. Het icoon op je beginscherm houdt de algemene kleur.
+- **Weer in de zijbalk**: vul onder *Instellingen → Weergave* bij *Weer voor* een plaats in. Onder de klok staan dan de temperatuur, een klein icoontje en het weertype, bijvoorbeeld *12° Half bewolkt · Utrecht*. Als de zijbalk is ingeklapt, staan alleen het icoontje en de temperatuur er. Het weer komt van Open-Meteo (gratis, zonder account), wordt alleen door de server opgehaald en elk kwartier ververst. Op je telefoon blijft het verborgen, net als de klok.
+
+### Migratie
+- De database krijgt automatisch een kolom voor de kleur van een categorie. Bestaande categorieën volgen de algemene accentkleur.
+
 ## [0.7.5] - 2026-10-19
 
 ### Gewijzigd
@@ -166,6 +175,7 @@ Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt
 - Installeerbaar als app (PWA).
 - Docker-image voor amd64 en arm64 via GitHub Actions, met PUID/PGID.
 
+[0.8.0]: https://github.com/RichrdJ/linker/compare/v0.7.5...v0.8.0
 [0.7.5]: https://github.com/RichrdJ/linker/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/RichrdJ/linker/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/RichrdJ/linker/compare/v0.7.2...v0.7.3

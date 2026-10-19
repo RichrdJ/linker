@@ -26,6 +26,8 @@ Alles draait in één container met SQLite. De pagina laadt geen scripts, fonts 
 - **Importeren** van de bladwijzers uit je browser (HTML-export uit Chrome, Firefox, Edge of Safari; elke map wordt een sectie), een ctrlTAB-back-up of een Linkwarden-export.
 - **Back-up** downloaden en terugzetten als JSON.
 - **Beveiligen** met een wachtwoord: alleen bewerken afschermen, of met **Inloggen verplicht** de hele startpagina achter een loginpagina zetten, zodat je Linker veilig via internet kunt gebruiken.
+- **Eigen kleur per categorie**: Werk blauw, Privé groen. Het logo en het icoon in je tabblad kleuren mee.
+- **Weer** klein onder de klok, via [Open-Meteo](https://open-meteo.com) (gratis, geen account). Alleen de server haalt het op; je plaats staat alleen in je eigen database.
 - **Installeerbaar als app** (PWA) op telefoon en desktop.
 
 ![Snelkoppeling toevoegen](docs/images/toevoegen-dark.png)

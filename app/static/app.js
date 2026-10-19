@@ -164,7 +164,9 @@ function renderSidebar() {
     const icon = state.settings.show_category_icons === "1" && c.icon ? esc(c.icon) : "";
     // In de ingeklapte zijbalk: het icoon, of anders de eerste letter
     const initial = esc([...c.name.trim()][0]?.toUpperCase() || "?");
-    return `<li class="col-item" data-cid="${c.id}">
+    // Eigen kleur: het tegeltje en de tint in de zijbalk krijgen die kleur, ook als de categorie niet open is
+    const own = c.accent ? ` style="--accent:${esc(c.accent)};--accent-ink:${inkFor(c.accent)}"` : "";
+    return `<li class="col-item" data-cid="${c.id}"${own}>
       <button type="button" class="col-btn" data-open="${c.id}" aria-current="${c.id === currentId}"
         title="${esc(c.name)}${i < 9 ? ` (Alt+${i + 1})` : ""}">
         ${icon ? `<span class="col-icon" aria-hidden="true">${icon}</span>` : `<span class="col-initial" aria-hidden="true">${initial}</span>`}
@@ -189,6 +191,7 @@ function renderBoard() {
   if (terms.length) return renderSearch(raw, terms);
 
   const col = current();
+  applyAccent(pageAccent());
   $("#col-title").textContent = col ? col.name : "";
   $("#add-section").hidden = !col;
   if (!col) {
@@ -240,17 +243,19 @@ function applyAccent(accent) {
   if (applyAccent.last === accent) return;
   applyAccent.last = accent;
   $("#favicon").href = "data:image/svg+xml," + encodeURIComponent(faviconSVG(accent));
-  const c = accent.slice(1);
-  $('link[rel="apple-touch-icon"]').href = `/icon-192.png?c=${c}`;
-  $('link[rel="manifest"]').href = `/manifest.webmanifest?c=${c}`;
 }
+// Een categorie met een eigen kleur kleurt de hele pagina, inclusief logo en tabblad-icoon
+const pageAccent = () => current()?.accent || state.settings.accent;
 
 function applySettings() {
   const s = state.settings;
   const root = document.documentElement;
   root.dataset.theme = s.theme;
   root.dataset.size = s.card_size;
-  applyAccent(s.accent);
+  applyAccent(pageAccent());
+  // Het app-icoon op je beginscherm houdt de algemene accentkleur
+  $('link[rel="apple-touch-icon"]').href = `/icon-192.png?c=${s.accent.slice(1)}`;
+  $('link[rel="manifest"]').href = `/manifest.webmanifest?c=${s.accent.slice(1)}`;
   root.classList.toggle("has-bg", !!s.background);
   root.classList.toggle("bg-dim", s.background_dim === "1");
   root.style.setProperty("--bg-image", s.background ? `url("/background?v=${encodeURIComponent(s.background)}")` : "none");
@@ -265,7 +270,8 @@ function applyAccess() {
   document.body.classList.toggle("can-edit", !!state.can_edit);
   $("#btn-lock").hidden = !state.locked;
   $("#lock-label").textContent = $("#btn-lock").title =
-    state.login_required ? "Uitloggen" : state.can_edit ? "Vergrendelen" : "Ontgrendelen";}
+    state.login_required ? "Uitloggen" : state.can_edit ? "Vergrendelen" : "Ontgrendelen";
+}
 
 function openCollection(id) {
   currentId = id;
@@ -286,6 +292,42 @@ function tick() {
   $("#date").textContent = dateFmt.format(now);
 }
 setInterval(tick, 10_000);
+
+/* ================================================================ weer */
+const WX_ICON = {
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>',
+  moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  partly: '<path d="M8 4.5v1.2M3.5 9h1.2M4.8 5.8l.9.9M11.2 5.8l-.9.9"/><path d="M5.6 11a3 3 0 0 1 5.3-2.3"/><path d="M8.5 19h9a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.6 1A3 3 0 0 0 8.5 19z"/>',
+  cloud: '<path d="M7 18h10a4 4 0 0 0 .5-8 6 6 0 0 0-11.5 1.5A3.3 3.3 0 0 0 7 18z"/>',
+  fog: '<path d="M4 9h16M6 13h12M4 17h16"/>',
+  rain: '<path d="M7 14h10a4 4 0 0 0 .5-8 6 6 0 0 0-11.5 1.5A3.3 3.3 0 0 0 7 14z"/><path d="M9 17l-1 3M13 17l-1 3M17 17l-1 3"/>',
+  snow: '<path d="M7 14h10a4 4 0 0 0 .5-8 6 6 0 0 0-11.5 1.5A3.3 3.3 0 0 0 7 14z"/><path d="M9 18h.01M12 20h.01M15 18h.01"/>',
+  storm: '<path d="M7 14h10a4 4 0 0 0 .5-8 6 6 0 0 0-11.5 1.5A3.3 3.3 0 0 0 7 14z"/><path d="m12 15-2 4h3l-2 3"/>',
+};
+// WMO-weercodes van Open-Meteo
+function wxKind(code, isDay) {
+  if (code === 0) return [isDay ? "sun" : "moon", "Onbewolkt"];
+  if (code <= 2) return [isDay ? "partly" : "moon", code === 1 ? "Licht bewolkt" : "Half bewolkt"];
+  if (code === 3) return ["cloud", "Bewolkt"];
+  if (code === 45 || code === 48) return ["fog", "Mist"];
+  if (code >= 51 && code <= 57) return ["rain", "Motregen"];
+  if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) return ["rain", code >= 80 ? "Buien" : "Regen"];
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return ["snow", "Sneeuw"];
+  if (code >= 95) return ["storm", "Onweer"];
+  return ["cloud", "Bewolkt"];
+}
+async function loadWeather() {
+  const box = $("#weather");
+  let w;
+  try { w = await api("GET", "/api/weather"); } catch { return; }
+  if (!w?.enabled || w.error) { box.hidden = !w?.error; if (w?.error) box.innerHTML = `<span class="wx-text">Weer niet beschikbaar</span>`; return; }
+  const [icon, label] = wxKind(w.code, w.is_day);
+  box.title = `${label}, ${w.temp}° in ${w.place}`;
+  box.innerHTML = `<svg class="wx-icon" viewBox="0 0 24 24" aria-hidden="true">${WX_ICON[icon]}</svg>`
+    + `<span class="wx-temp">${w.temp}°</span><span class="wx-text">${esc(label)} · ${esc(w.place)}</span>`;
+  box.hidden = false;
+}
+setInterval(loadWeather, 15 * 60_000);
 
 /* ================================================================ zoeken */
 function score(link, terms) {
@@ -740,6 +782,23 @@ $('[data-act="delete"]', formLink).addEventListener("click", async () => {
 const dlgName = $("#dlg-name"), formName = $("#form-name");
 let nameCtx = null;   // { kind: 'collection'|'section', id }
 
+/* Eigen kleur van een categorie: '' = de algemene accentkleur volgen */
+let colAccent = "";
+function setColAccent(value) {
+  colAccent = value;
+  $("#col-accent").value = value || state.settings.accent;
+  $("#col-accent-reset").hidden = !value;
+  $("#accent-state").textContent = value ? "(eigen kleur)" : "(volgt de algemene accentkleur)";
+  $$(".swatch", $("#col-swatches")).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.color === value)));
+}
+$("#col-swatches").innerHTML = SWATCHES.map(c => `<button type="button" class="swatch" style="background:${c}" data-color="${c}" title="${c}" aria-label="Kleur ${c}"></button>`).join("");
+$("#col-swatches").addEventListener("click", e => {
+  const c = e.target.closest("[data-color]")?.dataset.color;
+  if (c) setColAccent(c);
+});
+$("#col-accent").addEventListener("input", e => setColAccent(e.target.value.toLowerCase()));
+$("#col-accent-reset").addEventListener("click", () => setColAccent(""));
+
 async function openName(kind, id) {
   if (!state.can_edit && !(await openUnlock())) return;
   nameCtx = { kind, id: id || null };
@@ -750,6 +809,8 @@ async function openName(kind, id) {
   formName.name.placeholder = isCol ? "Hobby" : "Tools";
   formName.icon.value = isCol ? item?.icon || "" : "";
   $("#name-icon-row").hidden = !isCol || state.settings.show_category_icons !== "1";
+  $("#name-accent-row").hidden = !isCol;
+  setColAccent(isCol ? item?.accent || "" : "");
   $("#name-collection-row").hidden = isCol || !item;
   formName.collection_id.innerHTML = cols().map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
   formName.collection_id.value = String(item?.collection_id || currentId);
@@ -765,7 +826,7 @@ formName.addEventListener("submit", async e => {
   const { kind, id } = nameCtx;
   try {
     if (kind === "collection") {
-      const body = { name, icon: formName.icon.value.trim() };
+      const body = { name, icon: formName.icon.value.trim(), accent: colAccent };
       if (id) await api("PUT", `/api/collections/${id}`, body);
       else currentId = (await api("POST", "/api/collections", body)).id;
     } else {
@@ -850,6 +911,7 @@ function fillSettings() {
   formSettings.title.value = s.title;
   formSettings.card_size.value = s.card_size;
   formSettings.link_order.value = s.link_order;
+  formSettings.weather_place.value = s.weather_place;
   formSettings.show_subtitle.checked = s.show_subtitle === "1";
   formSettings.show_category_icons.checked = s.show_category_icons === "1";
   formSettings.show_clock.checked = s.show_clock === "1";
@@ -895,6 +957,7 @@ formSettings.addEventListener("submit", async e => {
     title: formSettings.title.value,
     card_size: formSettings.card_size.value,
     link_order: formSettings.link_order.value,
+    weather_place: formSettings.weather_place.value,
     show_subtitle: formSettings.show_subtitle.checked,
     show_category_icons: formSettings.show_category_icons.checked,
     show_clock: formSettings.show_clock.checked,
@@ -918,6 +981,7 @@ formSettings.addEventListener("submit", async e => {
     applySettings();
     render();
     pollStatus();
+    loadWeather();
     toast("Instellingen opgeslagen");
   } catch (err) { setError(formSettings, err.message); }
 });
@@ -1071,6 +1135,7 @@ setCollapsed(document.documentElement.classList.contains("side-collapsed"));
 applySettings();
 render();
 pollStatus();
+loadWeather();
 window.addEventListener("hashchange", () => {
   const id = Number(location.hash.slice(1));
   if (id && id !== currentId && cols().some(c => c.id === id)) openCollection(id);
