@@ -5,6 +5,11 @@ Versienummers volgen [Semantic Versioning](https://semver.org/lang/nl/): het mid
 
 Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt bij het opstarten automatisch bijgewerkt en je links blijven bewaard.
 
+## [0.7.1] - 2026-10-19
+
+### Gewijzigd
+- Smallere kaarten, zodat er meer snelkoppelingen naast elkaar passen. Ze vullen de rij nog steeds precies tot de rand. Het icoon is iets kleiner, en bij *Compact* zijn de kaarten ook smaller.
+
 ## [0.7.0] - 2026-10-19
 
 ### Toegevoegd
@@ -140,6 +145,7 @@ Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt
 - Installeerbaar als app (PWA).
 - Docker-image voor amd64 en arm64 via GitHub Actions, met PUID/PGID.
 
+[0.7.1]: https://github.com/RichrdJ/linker/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/RichrdJ/linker/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/RichrdJ/linker/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/RichrdJ/linker/compare/v0.5.0...v0.5.1
