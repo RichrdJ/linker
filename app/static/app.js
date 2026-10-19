@@ -107,8 +107,8 @@ function cardHTML(link, terms) {
     </a>
     <span class="dot" data-dot="${link.id}"></span>
     <span class="card-actions">
-      <button type="button" class="mini copy" data-copy="${link.id}" title="Adres kopiëren">${SVG.copy}</button>
       <button type="button" class="mini edit-only" data-edit-link="${link.id}" title="Bewerken">${SVG.edit}</button>
+      <button type="button" class="mini copy" data-copy="${link.id}" title="Adres kopiëren">${SVG.copy}</button>
     </span>
   </div>`;
 }
@@ -158,6 +158,8 @@ function renderSidebar() {
         <span class="col-down" data-col-down="${c.id}" hidden></span>
         <span class="col-count">${n || ""}</span>
       </button>
+      <button type="button" class="mini col-edit edit-only" data-edit-collection="${c.id}"
+        title="${esc(c.name)} bewerken" aria-label="${esc(c.name)} bewerken">${SVG.edit}</button>
     </li>`;
   }).join("");
   $$(".col-item", $("#collections")).forEach(li => (li.draggable = state.can_edit));
@@ -174,7 +176,6 @@ function renderBoard() {
 
   const col = current();
   $("#col-title").textContent = col ? col.name : "";
-  $("#edit-collection").hidden = !col;
   $("#add-section").hidden = !col;
   if (!col) {
     board.innerHTML = `<div class="empty">
@@ -451,7 +452,8 @@ document.addEventListener("click", async e => {
   const editSec = t.closest("[data-edit-section]");
   if (editSec) return openName("section", Number(editSec.dataset.editSection));
   if (t.closest("[data-add-section]") || t.closest("#add-section")) return openName("section");
-  if (t.closest("#edit-collection")) return openName("collection", currentId);
+  const editCol = t.closest("[data-edit-collection]");
+  if (editCol) return openName("collection", Number(editCol.dataset.editCollection));
   if (t.closest("#add-collection")) return withEdit(() => openName("collection"));
   const sort = t.closest("[data-sort]");
   if (sort) {

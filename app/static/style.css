@@ -161,10 +161,15 @@ button, input, select { font: inherit; color: inherit; }
 .dot.down { background: var(--down); box-shadow: 0 0 0 3px color-mix(in srgb, var(--down) 25%, transparent); }
 .card mark { background: color-mix(in srgb, var(--accent) 35%, transparent); color: inherit; border-radius: 2px; }
 
+/* Kopiëren en bewerken klein onder elkaar, rechts in de kaart */
 .card-actions {
-  position: absolute; right: 6px; top: 50%; transform: translateY(-50%); display: flex; gap: 2px; padding: 2px;
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 1px; padding: 1px;
   background: var(--surface); border-radius: var(--radius-sm); opacity: 0; pointer-events: none; transition: opacity .12s;
 }
+.card-actions .mini { width: 24px; height: 22px; }
+.card-actions .mini svg { width: 14px; height: 14px; }
+:root[data-size="compact"] .card-actions .mini { height: 19px; }
+:root[data-size="compact"] .card-actions .mini svg { width: 13px; height: 13px; }
 .card:hover .card-actions, .card-actions:focus-within { opacity: 1; pointer-events: auto; }
 .has-bg .card-actions { background: var(--raised); }
 
@@ -293,7 +298,10 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
-@media (max-width: 760px) { .card-actions .copy { display: none; } }
+@media (max-width: 760px) {
+  .card-actions .copy { display: none; }
+  .card-actions .mini, :root[data-size="compact"] .card-actions .mini { width: 32px; height: 32px; }   /* groot genoeg voor een vinger */
+}
 
 /* Tekst direct op de achtergrondafbeelding: altijd licht, met schaduw */
 .has-bg .clock, .has-bg .clock time, .has-bg .section-name, .has-bg .search-hint,
@@ -329,10 +337,25 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
 .mobile-only { display: none; }
 @media (max-width: 760px) { .mobile-only { display: flex; } }
 
-/* Potlood voor de categorie alleen bij hover (op touchscreens altijd zichtbaar) */
-#edit-collection { opacity: 0; transition: opacity .12s; }
-.col-head:hover #edit-collection, #edit-collection:focus-visible { opacity: 1; }
-@media (hover: none) { #edit-collection { opacity: 1; } }
+/* Potlood per categorie in de zijbalk: verschijnt bij hover op de plek van het aantal */
+.col-item { position: relative; }
+.col-edit {
+  position: absolute; right: 5px; top: 50%; transform: translateY(-50%);
+  width: 26px; height: 26px; opacity: 0; pointer-events: none; transition: opacity .12s;
+}
+.col-edit svg { width: 15px; height: 15px; }
+.col-item:hover .col-edit, .col-edit:focus-visible { opacity: 1; pointer-events: auto; }
+.can-edit .col-item:hover .col-count, .can-edit .col-item:focus-within .col-count { visibility: hidden; }
+.col-item:has(.col-btn[aria-current="true"]) .col-edit { color: var(--accent-ink); }
+.col-item:has(.col-btn[aria-current="true"]) .col-edit:hover { background: color-mix(in srgb, var(--accent-ink) 18%, transparent); }
+@media (hover: none) and (min-width: 761px) { .col-edit { opacity: 1; pointer-events: auto; } .can-edit .col-count { visibility: hidden; } }
+@media (min-width: 761px) { .side-collapsed .col-edit { display: none; } }
+@media (max-width: 760px) {
+  /* Telefoon: alleen bij de actieve categorie, binnen het pilletje */
+  .col-edit { display: none; }
+  .can-edit .col-item:has(.col-btn[aria-current="true"]) .col-btn { padding-right: 34px; }
+  .can-edit .col-item:has(.col-btn[aria-current="true"]) .col-edit { display: grid; opacity: 1; pointer-events: auto; right: 4px; }
+}
 
 /* Zijbalk breder of smaller slepen */
 .resizer {
