@@ -78,6 +78,9 @@ def init():
         conn.executescript(SCHEMA)
         # Latere kolommen komen hier als idempotente migratie:
         # _add_column(conn, "links", "kolom", "TEXT NOT NULL DEFAULT ''")
+        # 0.6.0: hoe vaak een snelkoppeling is geopend, om op meest bezocht te sorteren
+        _add_column(conn, "links", "visits", "INTEGER NOT NULL DEFAULT 0")
+        _add_column(conn, "links", "last_visit", "INTEGER NOT NULL DEFAULT 0")
         for k, v in DEFAULT_SETTINGS.items():
             conn.execute("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)", (k, v))
         # 0.2.2: het oude gele standaardaccent wordt het blauw van het logo
@@ -181,12 +184,25 @@ def reorder(collections=None, sections=None, links=None):
                              (int(sid), pos, int(lid)))
 
 
-def sort_section(section_id):
+SORT_ORDERS = {
+    "name": "name COLLATE NOCASE",
+    # meest bezocht eerst; bij gelijk aantal de laatst geopende, dan op naam
+    "visits": "visits DESC, last_visit DESC, name COLLATE NOCASE",
+}
+
+
+def sort_section(section_id, by="name"):
     with _lock, connect() as conn:
         ids = [r["id"] for r in conn.execute(
-            "SELECT id FROM links WHERE section_id = ? ORDER BY name COLLATE NOCASE", (section_id,))]
+            f"SELECT id FROM links WHERE section_id = ? ORDER BY {SORT_ORDERS[by]}", (section_id,))]
         for pos, lid in enumerate(ids):
             conn.execute("UPDATE links SET position = ? WHERE id = ?", (pos, lid))
+
+
+def record_visit(link_id, when: int):
+    with _lock, connect() as conn:
+        return conn.execute("UPDATE links SET visits = visits + 1, last_visit = ? WHERE id = ?",
+                            (when, link_id)).rowcount
 
 
 def first_section(collection_id):

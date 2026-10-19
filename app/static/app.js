@@ -18,6 +18,7 @@ const SVG = {
   grip: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg>',
   plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
   az: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18 7.5 6 11 18M5.2 14h4.6M14 6h6l-6 12h6"/></svg>',
+  popular: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14M5 12h9M5 18h4"/></svg>',
 };
 const SWATCHES = ["#3b7ddd", "#3fb8af", "#5cc489", "#a38cf2", "#ec6f8e", "#e8734a", "#f0b44c"];
 
@@ -100,7 +101,8 @@ function cardHTML(link, terms) {
   const sub = link.description || hostOf(link.url).replace(/^www\./, "");
   const hl = t => (terms?.length ? highlight(t, terms) : esc(t));
   return `<div class="card" data-id="${link.id}">
-    <a class="card-link" href="${esc(link.url)}"${target} draggable="false" title="${esc(link.url)}">
+    <a class="card-link" href="${esc(link.url)}"${target} draggable="false" data-visit="${link.id}"
+      title="${esc(link.url)}${link.visits ? `\n${link.visits} keer geopend` : ""}">
       ${iconHTML(link)}
       <span class="card-text">
         <span class="card-name">${hl(link.name)}</span>
@@ -125,6 +127,7 @@ function sectionHTML(sec, opts = {}) {
       ${searching ? "" : `<button type="button" class="mini add-inline edit-only" data-add-link="${sec.id}" title="Snelkoppeling toevoegen aan ${esc(sec.name)}" aria-label="Snelkoppeling toevoegen aan ${esc(sec.name)}">${SVG.plus}</button>
       <span class="section-tools">
         <button type="button" class="mini" data-sort="${sec.id}" title="Sorteren van A tot Z">${SVG.az}</button>
+        <button type="button" class="mini" data-sort="${sec.id}" data-sort-by="visits" title="Sorteren op meest bezocht">${SVG.popular}</button>
         <button type="button" class="mini" data-edit-section="${sec.id}" title="Sectie bewerken">${SVG.edit}</button>
         <span class="mini grip section-grip" title="Slepen om de sectie te verplaatsen">${SVG.grip}</span>
       </span>`}
@@ -332,6 +335,20 @@ function markSelected() {
   const el = selectedId != null && board.querySelector(`.card[data-id="${selectedId}"]`);
   if (el) { el.classList.add("selected"); el.scrollIntoView({ block: "nearest" }); }
 }
+/* Bezoeken tellen: sendBeacon komt ook aan als de pagina meteen wegnavigeert */
+function countVisit(id) {
+  const link = findLink(id)?.l;
+  if (!link) return;
+  link.visits = (link.visits || 0) + 1;
+  const url = `/api/links/${id}/visit`;
+  if (!(navigator.sendBeacon && navigator.sendBeacon(url))) fetch(url, { method: "POST", keepalive: true }).catch(() => {});
+}
+// Klik, Ctrl/Cmd-klik en middelste muisknop (nieuw tabblad); rechtsklikken telt niet
+["click", "auxclick"].forEach(type => document.addEventListener(type, e => {
+  const a = e.target.closest?.("a[data-visit]");
+  if (a && (e.type === "click" || e.button === 1)) countVisit(Number(a.dataset.visit));
+}));
+
 function go(url, newTab) {
   if (newTab) window.open(url, "_blank", "noopener");
   else location.href = url;
@@ -377,7 +394,7 @@ q.addEventListener("keydown", e => {
   e.preventDefault();
   const newTab = state.settings.new_tab === "1" || e.ctrlKey || e.metaKey;
   const link = findLink(selectedId)?.l;
-  if (link && !e.shiftKey) return go(link.url, newTab);
+  if (link && !e.shiftKey) { countVisit(link.id); return go(link.url, newTab); }
   if (!e.shiftKey && looksLikeAddress(raw)) return go(/^https?:\/\//i.test(raw) ? raw : "http://" + raw, newTab);
   go(state.search_url.replace("{q}", encodeURIComponent(raw)), newTab);
 });
@@ -459,8 +476,16 @@ document.addEventListener("click", async e => {
   if (t.closest("#add-collection")) return withEdit(() => openName("collection"));
   const sort = t.closest("[data-sort]");
   if (sort) {
-    try { await api("POST", `/api/sections/${sort.dataset.sort}/sort`); await reload(); toast("Gesorteerd van A tot Z"); }
-    catch (err) { toast(err.message); }
+    const byVisits = sort.dataset.sortBy === "visits";
+    if (byVisits && !findSection(Number(sort.dataset.sort))?.s.links.some(l => l.visits)) {
+      toast("In deze sectie zijn nog geen bezoeken geteld. Linker telt vanaf nu elke klik.", 4500);
+      return;
+    }
+    try {
+      await api("POST", `/api/sections/${sort.dataset.sort}/sort${byVisits ? "?by=visits" : ""}`);
+      await reload();
+      toast(byVisits ? "Gesorteerd op meest bezocht" : "Gesorteerd van A tot Z");
+    } catch (err) { toast(err.message); }
   }
 });
 

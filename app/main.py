@@ -452,8 +452,10 @@ def delete_section(section_id: int):
 
 
 @app.post("/api/sections/{section_id}/sort", dependencies=[Depends(require_edit)])
-def sort_section(section_id: int):
-    db.sort_section(section_id)
+def sort_section(section_id: int, by: str = "name"):
+    if by not in db.SORT_ORDERS:
+        raise HTTPException(422, "Onbekende sortering.")
+    db.sort_section(section_id, by)
     return {"ok": True}
 
 
@@ -498,6 +500,13 @@ def move_link(link_id: int, collection_id: int):
     db.execute("UPDATE links SET section_id = ?, position = ? WHERE id = ?",
                (sid, db.next_position("links", "WHERE section_id = ?", (sid,)), link_id))
     return {"ok": True}
+
+
+@app.post("/api/links/{link_id}/visit", status_code=204)
+def visit_link(link_id: int):
+    """Een klik op een snelkoppeling tellen (via sendBeacon, ook als de pagina al wegnavigeert)."""
+    db.record_visit(link_id, int(time.time()))
+    return Response(status_code=204)
 
 
 @app.delete("/api/links/{link_id}", dependencies=[Depends(require_edit)])

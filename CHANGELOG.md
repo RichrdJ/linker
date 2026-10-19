@@ -5,6 +5,15 @@ Versienummers volgen [Semantic Versioning](https://semver.org/lang/nl/): het mid
 
 Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt bij het opstarten automatisch bijgewerkt en je links blijven bewaard.
 
+## [0.6.0] - 2026-10-19
+
+### Toegevoegd
+- **Sorteren op meest bezocht**: Linker telt hoe vaak je een snelkoppeling opent: met een klik, in een nieuw tabblad (Ctrl-klik of middelste muisknop) of met Enter vanuit zoeken. Naast *Sorteren van A tot Z* staat bij elke sectie een knop *Sorteren op meest bezocht*. Bij een gelijk aantal komt de laatst geopende eerst. Net als A tot Z zet de knop de volgorde één keer vast; daarna kun je nog gewoon slepen.
+- Beweeg over een snelkoppeling om te zien hoe vaak je hem hebt geopend.
+
+### Migratie
+- De database krijgt automatisch twee kolommen voor het aantal bezoeken. Tellen begint vanaf deze versie, dus in het begin staan alle tellers op 0.
+
 ## [0.5.1] - 2026-10-19
 
 ### Gewijzigd
@@ -125,6 +134,7 @@ Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt
 - Installeerbaar als app (PWA).
 - Docker-image voor amd64 en arm64 via GitHub Actions, met PUID/PGID.
 
+[0.6.0]: https://github.com/RichrdJ/linker/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/RichrdJ/linker/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/RichrdJ/linker/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/RichrdJ/linker/compare/v0.4.0...v0.4.1
