@@ -75,12 +75,22 @@ button, input, select { font: inherit; color: inherit; }
   background: none; border: 0; border-radius: var(--radius); text-align: left; cursor: pointer; color: var(--muted);
 }
 .col-btn:hover { background: var(--surface); color: var(--fg); }
-.col-btn[aria-current="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+/* Actieve categorie: zachte tint van de accentkleur met een lijntje links, geen vol vlak */
+.col-btn { position: relative; transition: background .15s, color .15s; }
+.col-btn[aria-current="true"] {
+  background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--fg); font-weight: 600;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+.col-btn[aria-current="true"]:hover { background: color-mix(in srgb, var(--accent) 21%, transparent); }
+.col-btn[aria-current="true"]::before {
+  content: ""; position: absolute; left: -12px; top: 9px; bottom: 9px; width: 3px; border-radius: 0 3px 3px 0; background: var(--accent);
+}
+.col-btn[aria-current="true"] .col-count { color: var(--accent); opacity: 1; }
+.col-btn[aria-current="true"] .col-icon, .col-btn[aria-current="true"] .col-initial { color: var(--accent); }
 .col-icon { width: 20px; text-align: center; flex: none; font-size: 15px; }
 .col-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .col-count { font-size: 12px; opacity: .7; font-variant-numeric: tabular-nums; }
 .col-down { width: 7px; height: 7px; border-radius: 50%; background: var(--down); flex: none; }
-.col-btn[aria-current="true"] .col-down { box-shadow: 0 0 0 2px var(--accent-ink); }
 
 
 .sidebar-foot { padding: 10px 12px 14px; border-top: 1px solid var(--line); display: grid; gap: 2px; }
@@ -290,6 +300,7 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
   .col-item { margin: 0; }
   .col-btn { white-space: nowrap; padding: 6px 12px; min-height: 34px; background: var(--surface); }
   .col-count { display: none; }
+  .col-btn[aria-current="true"]::before { display: none; }   /* pilletjes op de telefoon: alleen de tint */
   .main { padding: 16px 14px 40px; }
   .cards { grid-template-columns: 1fr; gap: 8px; }
   .clock { display: none; }
@@ -352,8 +363,8 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
 .col-edit svg { width: 15px; height: 15px; }
 .col-item:hover .col-edit, .col-edit:focus-visible { opacity: 1; pointer-events: auto; }
 .can-edit .col-item:hover .col-count, .can-edit .col-item:focus-within .col-count { visibility: hidden; }
-.col-item:has(.col-btn[aria-current="true"]) .col-edit { color: var(--accent-ink); }
-.col-item:has(.col-btn[aria-current="true"]) .col-edit:hover { background: color-mix(in srgb, var(--accent-ink) 18%, transparent); }
+.col-item:has(.col-btn[aria-current="true"]) .col-edit { color: var(--accent); }
+.col-item:has(.col-btn[aria-current="true"]) .col-edit:hover { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--fg); }
 @media (hover: none) and (min-width: 761px) { .col-edit { opacity: 1; pointer-events: auto; } .can-edit .col-count { visibility: hidden; } }
 @media (min-width: 761px) { .side-collapsed .col-edit { display: none; } }
 @media (max-width: 760px) {

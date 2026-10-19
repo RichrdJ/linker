@@ -5,6 +5,11 @@ Versienummers volgen [Semantic Versioning](https://semver.org/lang/nl/): het mid
 
 Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt bij het opstarten automatisch bijgewerkt en je links blijven bewaard.
 
+## [0.7.5] - 2026-10-19
+
+### Gewijzigd
+- Ook in de **uitgeklapte zijbalk** is de actieve categorie geen vol gekleurd vlak meer. Hij krijgt een zachte tint van je accentkleur, een dunne rand en een accentlijntje aan de linkerkant; het aantal en het potlood staan in de accentkleur. Op je telefoon krijgt het actieve pilletje dezelfde zachte tint.
+
 ## [0.7.4] - 2026-10-19
 
 ### Gewijzigd
@@ -161,6 +166,7 @@ Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt
 - Installeerbaar als app (PWA).
 - Docker-image voor amd64 en arm64 via GitHub Actions, met PUID/PGID.
 
+[0.7.5]: https://github.com/RichrdJ/linker/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/RichrdJ/linker/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/RichrdJ/linker/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/RichrdJ/linker/compare/v0.7.1...v0.7.2
