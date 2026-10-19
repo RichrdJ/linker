@@ -85,8 +85,8 @@ Open daarna http://localhost:5656.
 
 Alle wijzigingen per versie staan in [CHANGELOG.md](CHANGELOG.md) en onder [Releases](https://github.com/RichrdJ/linker/releases). Het versienummer van je installatie staat onderaan *Instellingen*.
 
-- `:latest` volgt `main`, `:0.2.5` is een vaste versie.
-- Wil je zelf bepalen wanneer je updatet? Zet dan een vast versienummer in `portainer-stack.yml`, bijvoorbeeld `:0.2.5`.
+- `:latest` volgt `main`, `:0.2.6` is een vaste versie.
+- Wil je zelf bepalen wanneer je updatet? Zet dan een vast versienummer in `portainer-stack.yml`, bijvoorbeeld `:0.2.6`.
 
 **Nieuwe versie uitbrengen:** werk `CHANGELOG.md` en `app/VERSION` bij, commit, en push met een tag:
 
