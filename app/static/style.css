@@ -161,7 +161,7 @@ body:not(.can-edit) .col-head { display: none; }   /* alleen + Sectie staat er n
 .card-name { display: block; font-weight: 550; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-sub { display: block; font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hide-sub .card-sub { display: none; }
-.dot { position: absolute; top: 9px; right: 9px; width: 7px; height: 7px; border-radius: 50%; }
+.dot { position: absolute; bottom: 9px; right: 9px; width: 7px; height: 7px; border-radius: 50%; }
 .dot.up { background: var(--up); }
 .dot.down { background: var(--down); box-shadow: 0 0 0 3px color-mix(in srgb, var(--down) 25%, transparent); }
 .card mark { background: color-mix(in srgb, var(--accent) 35%, transparent); color: inherit; border-radius: 2px; }
@@ -306,6 +306,7 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
 @media (max-width: 760px) {
   .card-actions .copy { display: none; }
   .card-actions .mini, :root[data-size="compact"] .card-actions .mini { width: 32px; height: 32px; }   /* groot genoeg voor een vinger */
+  .card-actions { margin-right: 14px; }   /* ruimte voor het online-bolletje rechtsonder */
 }
 
 /* Tekst direct op de achtergrondafbeelding: altijd licht, met schaduw */
