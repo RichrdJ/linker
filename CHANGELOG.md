@@ -5,6 +5,11 @@ Versienummers volgen [Semantic Versioning](https://semver.org/lang/nl/): het mid
 
 Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt bij het opstarten automatisch bijgewerkt en je links blijven bewaard.
 
+## [0.3.0] - 2026-10-19
+
+### Toegevoegd
+- **Zijbalk breder of smaller maken**: sleep de rechterrand van de zijbalk (een blauwe lijn verschijnt als je eroverheen beweegt). De breedte loopt van 170 tot 440 pixels en wordt per browser onthouden. Dubbelklik op de rand voor de standaardbreedte. Met het toetsenbord: Tab naar de rand en gebruik de pijltjes links en rechts.
+
 ## [0.2.7] - 2026-10-19
 
 ### Gewijzigd
@@ -77,6 +82,7 @@ Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt
 - Installeerbaar als app (PWA).
 - Docker-image voor amd64 en arm64 via GitHub Actions, met PUID/PGID.
 
+[0.3.0]: https://github.com/RichrdJ/linker/compare/v0.2.7...v0.3.0
 [0.2.7]: https://github.com/RichrdJ/linker/compare/v0.2.6...v0.2.7
 [0.2.6]: https://github.com/RichrdJ/linker/compare/v0.2.5...v0.2.6
 [0.2.5]: https://github.com/RichrdJ/linker/compare/v0.2.4...v0.2.5

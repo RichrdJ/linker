@@ -11,6 +11,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="stylesheet" href="/static/style.css?v={{ version }}">
 <style>:root { --accent: {{ s.accent }}; }</style>
+<script>try { var w = localStorage.getItem("linker-sidebar"); if (w) document.documentElement.style.setProperty("--side-w", w + "px"); } catch (e) {}</script>
 </head>
 <body>
 <div class="bg" id="bg" aria-hidden="true"></div>
@@ -43,6 +44,8 @@
         <span id="lock-label">Ontgrendelen</span>
       </button>
     </div>
+    <div class="resizer" id="resizer" role="separator" aria-orientation="vertical" aria-label="Breedte van de zijbalk"
+         tabindex="0" title="Sleep om de breedte te wijzigen, dubbelklik voor de standaardbreedte"></div>
   </aside>
 
   <main class="main">

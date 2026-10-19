@@ -48,7 +48,7 @@ button, input, select { font: inherit; color: inherit; }
 .has-bg .sidebar { background: color-mix(in srgb, var(--side) 72%, transparent); }
 
 /* ------------------------------------------------ indeling */
-.app { display: grid; grid-template-columns: 236px 1fr; min-height: 100%; }
+.app { display: grid; grid-template-columns: var(--side-w, 236px) 1fr; min-height: 100%; }
 
 .sidebar {
   position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column;
@@ -319,3 +319,17 @@ body:not(.can-edit) .edit-only, body:not(.can-edit) .section-tools, body:not(.ca
 #edit-collection { opacity: 0; transition: opacity .12s; }
 .col-head:hover #edit-collection, #edit-collection:focus-visible { opacity: 1; }
 @media (hover: none) { #edit-collection { opacity: 1; } }
+
+/* Zijbalk breder of smaller slepen */
+.resizer {
+  position: absolute; top: 0; right: -4px; width: 8px; height: 100%; z-index: 3;
+  cursor: col-resize; touch-action: none;
+}
+.resizer::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 3px; width: 2px;
+  background: transparent; transition: background .15s;
+}
+.resizer:hover::after, .resizer:focus-visible::after, .resizing .resizer::after { background: var(--accent); }
+.resizer:focus-visible { outline: none; }
+.resizing, .resizing * { cursor: col-resize !important; user-select: none; }
+@media (max-width: 760px) { .resizer { display: none; } }
