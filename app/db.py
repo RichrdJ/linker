@@ -20,6 +20,7 @@ DEFAULT_SETTINGS = {
     "show_subtitle": "1",     # omschrijving of adres onder de naam
     "show_category_icons": "0",  # icoon/emoji voor de categorieën in de zijbalk
     "card_size": "normal",    # compact | normal
+    "link_order": "manual",   # manual = eigen volgorde | visits = meest bezocht eerst, vanzelf
     "check_interval": "60",   # seconden, 0 = uit
     "background": "",         # bestandsnaam in uploads/
     "background_dim": "1",

@@ -117,6 +117,15 @@ function cardHTML(link, terms) {
   </div>`;
 }
 
+/* Volgorde "meest bezocht eerst": vanzelf, bij gelijk aantal de laatst geopende, daarna de eigen volgorde */
+const autoOrder = () => state.settings.link_order === "visits";
+function ordered(links) {
+  if (!autoOrder()) return links;
+  return links.map((l, i) => [l, i])
+    .sort(([a, i], [b, j]) => (b.visits || 0) - (a.visits || 0) || (b.last_visit || 0) - (a.last_visit || 0) || i - j)
+    .map(([l]) => l);
+}
+
 function sectionHTML(sec, opts = {}) {
   const { terms, links = sec.links, path } = opts;
   const searching = !!terms?.length;
@@ -126,8 +135,8 @@ function sectionHTML(sec, opts = {}) {
       <span class="section-count">${links.length || ""}</span>
       ${searching ? "" : `<button type="button" class="mini add-inline edit-only" data-add-link="${sec.id}" title="Snelkoppeling toevoegen aan ${esc(sec.name)}" aria-label="Snelkoppeling toevoegen aan ${esc(sec.name)}">${SVG.plus}</button>
       <span class="section-tools">
-        <button type="button" class="mini" data-sort="${sec.id}" title="Sorteren van A tot Z">${SVG.az}</button>
-        <button type="button" class="mini" data-sort="${sec.id}" data-sort-by="visits" title="Sorteren op meest bezocht">${SVG.popular}</button>
+        ${autoOrder() ? "" : `<button type="button" class="mini" data-sort="${sec.id}" title="Sorteren van A tot Z">${SVG.az}</button>
+        <button type="button" class="mini" data-sort="${sec.id}" data-sort-by="visits" title="Sorteren op meest bezocht">${SVG.popular}</button>`}
         <button type="button" class="mini" data-edit-section="${sec.id}" title="Sectie bewerken">${SVG.edit}</button>
         <span class="mini grip section-grip" title="Slepen om de sectie te verplaatsen">${SVG.grip}</span>
       </span>`}
@@ -193,7 +202,7 @@ function renderBoard() {
     board.innerHTML = `<div class="empty"><h2>${esc(col.name)} is nog leeg</h2><p>Voeg een sectie toe om er snelkoppelingen in te zetten.</p>
       <button type="button" class="btn primary edit-only" data-add-section>+ Sectie</button></div>`;
   } else {
-    board.innerHTML = col.sections.map(s => sectionHTML(s)).join("");
+    board.innerHTML = col.sections.map(s => sectionHTML(s, { links: ordered(s.links) })).join("");
     if (!col.sections.some(s => s.links.length)) {
       board.insertAdjacentHTML("afterbegin", `<p class="first-tip edit-only">Plak een adres met <kbd>Ctrl</kbd>+<kbd>V</kbd>, sleep een link uit een ander tabblad hierheen, of klik op de <b>+</b> naast een sectie.</p>`);
     }
@@ -215,7 +224,8 @@ function afterBoard() {
     if (img.complete && img.naturalWidth) show();
     else img.addEventListener("load", show, { once: true });
   });
-  $$(".card", board).forEach(el => (el.draggable = state.can_edit && !document.body.classList.contains("searching")));
+  // Bij "meest bezocht eerst" bepaalt Linker de volgorde, dus dan geen kaarten slepen
+  $$(".card", board).forEach(el => (el.draggable = state.can_edit && !autoOrder() && !document.body.classList.contains("searching")));
   applyStatus();
 }
 
@@ -839,6 +849,7 @@ function fillSettings() {
   formSettings.search_engine.innerHTML = Object.entries(state.engines).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("");
   formSettings.title.value = s.title;
   formSettings.card_size.value = s.card_size;
+  formSettings.link_order.value = s.link_order;
   formSettings.show_subtitle.checked = s.show_subtitle === "1";
   formSettings.show_category_icons.checked = s.show_category_icons === "1";
   formSettings.show_clock.checked = s.show_clock === "1";
@@ -883,6 +894,7 @@ formSettings.addEventListener("submit", async e => {
   const body = {
     title: formSettings.title.value,
     card_size: formSettings.card_size.value,
+    link_order: formSettings.link_order.value,
     show_subtitle: formSettings.show_subtitle.checked,
     show_category_icons: formSettings.show_category_icons.checked,
     show_clock: formSettings.show_clock.checked,

@@ -5,6 +5,12 @@ Versienummers volgen [Semantic Versioning](https://semver.org/lang/nl/): het mid
 
 Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt bij het opstarten automatisch bijgewerkt en je links blijven bewaard.
 
+## [0.7.0] - 2026-10-19
+
+### Toegevoegd
+- **Vanzelf op meest bezocht**: kies onder *Instellingen → Weergave → Volgorde snelkoppelingen* voor *Meest bezocht eerst, vanzelf*. Elke sectie zet dan de snelkoppelingen die je het vaakst opent bovenaan, zonder dat je op een knop hoeft te drukken. Bij een gelijk aantal komt de laatst geopende eerst, daarna blijft je eigen volgorde staan. De nieuwe volgorde zie je zodra je de pagina opnieuw opent, zodat er niets verspringt terwijl je klikt.
+- In deze stand kun je snelkoppelingen niet slepen en zijn de sorteerknoppen verborgen. Secties slepen kan nog wel. Zet de volgorde terug op *Eigen volgorde* en je oude volgorde is er weer.
+
 ## [0.6.0] - 2026-10-19
 
 ### Toegevoegd
@@ -134,6 +140,7 @@ Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt
 - Installeerbaar als app (PWA).
 - Docker-image voor amd64 en arm64 via GitHub Actions, met PUID/PGID.
 
+[0.7.0]: https://github.com/RichrdJ/linker/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/RichrdJ/linker/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/RichrdJ/linker/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/RichrdJ/linker/compare/v0.4.1...v0.5.0

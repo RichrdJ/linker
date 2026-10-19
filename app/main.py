@@ -237,6 +237,7 @@ class SettingsIn(BaseModel):
     show_subtitle: bool | None = None
     show_category_icons: bool | None = None
     card_size: str | None = None
+    link_order: str | None = None
     background_dim: bool | None = None
     check_interval: int | None = Field(default=None, ge=0, le=86400)
     new_password: str | None = Field(default=None, max_length=200)
@@ -587,6 +588,7 @@ def background():
 
 THEMES = ("auto", "dark", "light", "oled")
 CARD_SIZES = ("compact", "normal")
+LINK_ORDERS = ("manual", "visits")
 
 
 @app.put("/api/settings", dependencies=[Depends(require_edit)])
@@ -617,6 +619,10 @@ def save_settings(request: Request, body: SettingsIn):
         if body.card_size not in CARD_SIZES:
             raise HTTPException(422, "Onbekende kaartgrootte.")
         values["card_size"] = body.card_size
+    if body.link_order is not None:
+        if body.link_order not in LINK_ORDERS:
+            raise HTTPException(422, "Onbekende volgorde.")
+        values["link_order"] = body.link_order
     for key in ("new_tab", "show_clock", "show_subtitle", "show_category_icons", "background_dim"):
         v = getattr(body, key)
         if v is not None:
