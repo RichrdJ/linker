@@ -120,8 +120,8 @@ function sectionHTML(sec, opts = {}) {
     <div class="section-head">
       <h2 class="section-name" id="s${sec.id}">${path ? `<span class="section-path">${esc(path)} / </span>` : ""}${esc(sec.name)}</h2>
       <span class="section-count">${links.length || ""}</span>
-      ${searching ? "" : `<span class="section-tools">
-        <button type="button" class="mini" data-add-link="${sec.id}" title="Snelkoppeling toevoegen">${SVG.plus}</button>
+      ${searching ? "" : `<button type="button" class="mini add-inline edit-only" data-add-link="${sec.id}" title="Snelkoppeling toevoegen aan ${esc(sec.name)}" aria-label="Snelkoppeling toevoegen aan ${esc(sec.name)}">${SVG.plus}</button>
+      <span class="section-tools">
         <button type="button" class="mini" data-sort="${sec.id}" title="Sorteren van A tot Z">${SVG.az}</button>
         <button type="button" class="mini" data-edit-section="${sec.id}" title="Sectie bewerken">${SVG.edit}</button>
         <span class="mini grip section-grip" title="Slepen om de sectie te verplaatsen">${SVG.grip}</span>
@@ -129,7 +129,7 @@ function sectionHTML(sec, opts = {}) {
     </div>
     <div class="cards">
       ${links.map(l => cardHTML(l, terms)).join("")}
-      ${searching || links.length ? "" : `<button type="button" class="add-card edit-only" data-add-link="${sec.id}">+ Snelkoppeling</button>`}
+      ${searching || links.length ? "" : `<button type="button" class="add-card edit-only" data-add-link="${sec.id}" aria-label="Snelkoppeling toevoegen">+</button>`}
     </div>
   </section>`;
 }
@@ -187,7 +187,7 @@ function renderBoard() {
   } else {
     board.innerHTML = col.sections.map(s => sectionHTML(s)).join("");
     if (!col.sections.some(s => s.links.length)) {
-      board.insertAdjacentHTML("afterbegin", `<p class="first-tip edit-only">Plak een adres met <kbd>Ctrl</kbd>+<kbd>V</kbd>, sleep een link uit een ander tabblad hierheen, of gebruik <b>+ Snelkoppeling</b>.</p>`);
+      board.insertAdjacentHTML("afterbegin", `<p class="first-tip edit-only">Plak een adres met <kbd>Ctrl</kbd>+<kbd>V</kbd>, sleep een link uit een ander tabblad hierheen, of klik op de <b>+</b> naast een sectie.</p>`);
     }
   }
   selectedId = null;
@@ -418,7 +418,6 @@ document.addEventListener("click", async e => {
   if (t.closest("[data-add-section]") || t.closest("#add-section")) return openName("section");
   if (t.closest("#edit-collection")) return openName("collection", currentId);
   if (t.closest("#add-collection")) return withEdit(() => openName("collection"));
-  if (t.closest("#add-shortcut")) return openLink(null, null);
   const sort = t.closest("[data-sort]");
   if (sort) {
     try { await api("POST", `/api/sections/${sort.dataset.sort}/sort`); await reload(); toast("Gesorteerd van A tot Z"); }
@@ -535,12 +534,7 @@ const setError = (form, msg) => ($(".form-error", form).textContent = msg || "")
 const dlgLink = $("#dlg-link"), formLink = $("#form-link");
 let linkEditId = null;
 
-let nameTouched = false, checkTouched = false, afterSave = null;
-
-function isLocalAddress(url) {
-  const host = hostOf(/^[a-z]+:\/\//i.test(url) ? url : "http://" + url).split(":")[0].toLowerCase();
-  return host === "localhost" || /^(\d{1,3}\.){3}\d{1,3}$/.test(host) || /\.(lan|local|home|internal)$/.test(host) || !host.includes(".");
-}
+let nameTouched = false, afterSave = null;
 
 async function openLink(id, sectionId, prefill = {}) {
   if (!state.can_edit && !(await openUnlock())) return;
@@ -560,10 +554,9 @@ async function openLink(id, sectionId, prefill = {}) {
   formLink.section_id.value = String(link?.section_id || sectionId || firstSection);
   if (!formLink.section_id.value) formLink.section_id.selectedIndex = 0;
   nameTouched = !!(link || prefill.name);
-  checkTouched = !!link;
-  formLink.check_enabled.checked = link ? link.check_enabled : (!!formLink.url.value && isLocalAddress(formLink.url.value));
+  formLink.check_enabled.checked = link ? link.check_enabled : false;
   $("details details", formLink).open = !!link?.check_url;
-  $("#more-opts").open = !!(link && (link.description || link.icon || link.check_enabled || link.check_url));
+  $("#more-opts").open = !!(link && (link.description || link.icon || link.check_url));
   $('[data-act="delete"]', formLink).hidden = !link;
   $("#name-hint").hidden = !!link;
   setError(formLink);
@@ -594,10 +587,8 @@ function fetchTitle() {
 formLink.url.addEventListener("input", () => {
   titleFor = "";
   fetchTitle();
-  if (!checkTouched && !linkEditId) formLink.check_enabled.checked = !!formLink.url.value.trim() && isLocalAddress(formLink.url.value.trim());
 });
 formLink.name.addEventListener("input", () => (nameTouched = formLink.name.value.trim() !== ""));
-formLink.check_enabled.addEventListener("change", () => (checkTouched = true));
 
 let previewTimer = null;
 function updatePreview() {

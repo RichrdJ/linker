@@ -46,9 +46,6 @@
                aria-describedby="search-hint">
         <kbd class="slash" aria-hidden="true">/</kbd>
       </div>
-      <button type="button" class="btn primary add-shortcut edit-only" id="add-shortcut" title="Snelkoppeling toevoegen (of plak een adres met Ctrl+V)">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Snelkoppeling</span>
-      </button>
       <p class="clock" id="clock"><time id="time"></time><span id="date"></span></p>
     </div>
     <p class="search-hint" id="search-hint" aria-live="polite"></p>
@@ -74,8 +71,9 @@
       <label class="wide">Adres<input name="url" required placeholder="https://voorbeeld.nl of 192.168.1.10:8989" inputmode="url" autocomplete="off"></label>
       <label class="wide">Naam <span class="opt" id="name-hint">(leeg = titel van de pagina)</span><input name="name" maxlength="80"></label>
       <label class="wide">Categorie en sectie<select name="section_id"></select></label>
+      <label class="check wide" title="Toont een groen of rood bolletje bij de snelkoppeling."><input type="checkbox" name="check_enabled"> Controleren of hij online is</label>
       <details class="wide more" id="more-opts">
-        <summary>Meer opties: omschrijving, icoon, online-controle</summary>
+        <summary>Meer opties: omschrijving, icoon</summary>
         <div class="fields">
           <label class="wide">Omschrijving <span class="opt">(optioneel)</span><input name="description" maxlength="200" placeholder="bv. Teamplanning"></label>
           <div class="wide icon-field">
@@ -84,9 +82,8 @@
             <div class="icon-preview" id="icon-preview" aria-hidden="true"></div>
           </div>
           <p class="help wide">Leeg laten pakt het icoon van de site zelf. Typ de naam van een app (<code>outlook</code>, <code>plex</code>, <code>home-assistant</code>) voor een icoon uit dashboard-icons of selfh.st, plak een afbeeldingsadres, upload een eigen bestand of gebruik een emoji.</p>
-          <label class="check wide" title="Toont een groen of rood bolletje. Handig voor diensten in je thuisnetwerk."><input type="checkbox" name="check_enabled"> Controleren of hij online is</label>
           <details class="wide">
-            <summary>Ander adres voor de controle</summary>
+            <summary>Ander adres voor de online-controle</summary>
             <label>Controle-adres<input name="check_url" placeholder="http://sonarr:8989"></label>
             <p class="help">Handig als de snelkoppeling via je domein loopt, maar Linker de dienst intern sneller bereikt (bv. via de containernaam).</p>
           </details>

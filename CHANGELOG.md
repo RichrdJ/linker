@@ -5,6 +5,12 @@ Versienummers volgen [Semantic Versioning](https://semver.org/lang/nl/): het mid
 
 Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt bij het opstarten automatisch bijgewerkt en je links blijven bewaard.
 
+## [0.2.3] - 2026-10-19
+
+### Gewijzigd
+- De grote knop *+ Snelkoppeling* naast de zoekbalk is weg. Toevoegen gaat nu met een subtiele **+** naast elke sectienaam, die direct in die sectie toevoegt. Plakken, slepen en de bladwijzer-knop werken zoals voorheen.
+- Het vinkje **Controleren of hij online is** staat direct zichtbaar in het toevoegvenster, niet meer onder *Meer opties*. Het staat standaard uit, ook voor adressen in je thuisnetwerk.
+
 ## [0.2.2] - 2026-10-19
 
 ### Gewijzigd
@@ -50,6 +56,7 @@ Updaten in Portainer: open de stack → **Pull and redeploy**. De database wordt
 - Installeerbaar als app (PWA).
 - Docker-image voor amd64 en arm64 via GitHub Actions, met PUID/PGID.
 
+[0.2.3]: https://github.com/RichrdJ/linker/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/RichrdJ/linker/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/RichrdJ/linker/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/RichrdJ/linker/compare/v0.1.0...v0.2.0

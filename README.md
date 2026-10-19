@@ -10,7 +10,7 @@ Alles draait in één container met SQLite. De pagina laadt geen scripts, fonts 
 
 - **Categorieën → secties → snelkoppelingen.** Bij de eerste start staan *Privé* en *Werk* klaar. Wisselen met een klik of `Alt`+`1` tot `9`; Linker onthoudt waar je was.
 - **Snel toevoegen**, op vier manieren:
-  - de knop **+ Snelkoppeling**: vul alleen het adres in, de naam wordt de titel van de pagina;
+  - de **+** naast een sectie: vul alleen het adres in, de naam wordt de titel van de pagina;
   - **plak** een adres met `Ctrl`+`V` ergens op de pagina;
   - **sleep** een link of het adres uit een ander tabblad op de pagina (of op een sectie);
   - de **bladwijzer-knop "+ Naar Linker"** (te vinden in *Instellingen*): sleep hem naar je bladwijzerbalk en bewaar elke website met één klik. Na het opslaan ga je terug naar de pagina.
@@ -20,7 +20,7 @@ Alles draait in één container met SQLite. De pagina laadt geen scripts, fonts 
   - `Enter` opent de beste treffer, `↑` `↓` kiest een andere, `Esc` wist.
   - `Shift`+`Enter` zoekt op het web: DuckDuckGo, Google, Startpage, Bing, Brave, Kagi, Ecosia of een eigen zoekmachine.
 - **Iconen** zonder gedoe: automatisch het icoon van de site (ook voor diensten in je thuisnetwerk), of een appnaam zoals `outlook` of `plex` uit [dashboard-icons](https://github.com/homarr-labs/dashboard-icons) / [selfh.st/icons](https://github.com/selfhst/icons), een eigen upload, een afbeeldingsadres of een emoji. Iconen worden in `/config` bewaard.
-- **Online-controle** (optioneel per snelkoppeling): een groen of rood bolletje, ook op de categorie in de zijbalk. Staat standaard aan voor adressen in je thuisnetwerk.
+- **Online-controle** (optioneel per snelkoppeling): een groen of rood bolletje, ook op de categorie in de zijbalk. Zet je aan met het vinkje bij het toevoegen; standaard staat het uit.
 - **Uiterlijk**: licht, donker, OLED of automatisch, een eigen accentkleur, normale of compacte kaarten, en een eigen achtergrondafbeelding.
 - **Importeren** van de bladwijzers uit je browser (HTML-export uit Chrome, Firefox, Edge of Safari; elke map wordt een sectie), een ctrlTAB-back-up of een Linkwarden-export.
 - **Back-up** downloaden en terugzetten als JSON.
@@ -85,8 +85,8 @@ Open daarna http://localhost:5656.
 
 Alle wijzigingen per versie staan in [CHANGELOG.md](CHANGELOG.md) en onder [Releases](https://github.com/RichrdJ/linker/releases). Het versienummer van je installatie staat onderaan *Instellingen*.
 
-- `:latest` volgt `main`, `:0.2.2` is een vaste versie.
-- Wil je zelf bepalen wanneer je updatet? Zet dan een vast versienummer in `portainer-stack.yml`, bijvoorbeeld `:0.2.2`.
+- `:latest` volgt `main`, `:0.2.3` is een vaste versie.
+- Wil je zelf bepalen wanneer je updatet? Zet dan een vast versienummer in `portainer-stack.yml`, bijvoorbeeld `:0.2.3`.
 
 **Nieuwe versie uitbrengen:** werk `CHANGELOG.md` en `app/VERSION` bij, commit, en push met een tag:
 
