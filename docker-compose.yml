@@ -1,0 +1,14 @@
+services:
+  linker:
+    build: .
+    image: linker:latest
+    container_name: linker
+    restart: unless-stopped
+    ports:
+      - "5656:5656"            # startpagina: http://<server-ip>:5656
+    environment:
+      - TZ=Europe/Amsterdam
+      - PUID=1000              # eigenaar van de bestanden in /config
+      - PGID=1000
+    volumes:
+      - ./config:/config       # database, iconen-cache

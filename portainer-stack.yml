@@ -1,0 +1,20 @@
+# Portainer → Stacks → Add stack → "Web editor": plak dit bestand.
+# Gebruikt de kant-en-klare image die GitHub Actions bouwt (amd64 + arm64).
+# Er hoeft niets ingevuld te worden: alle instellingen doe je in Linker zelf.
+
+services:
+  linker:
+    image: ghcr.io/richrdj/linker:latest
+    container_name: linker
+    restart: unless-stopped
+    ports:
+      - "5656:5656"   # links de poort op je server, pas aan als 5656 al bezet is
+    environment:
+      TZ: Europe/Amsterdam
+      PUID: 1000
+      PGID: 1000
+    volumes:
+      - linker-config:/config
+
+volumes:
+  linker-config:

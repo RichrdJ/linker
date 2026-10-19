@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="nl" data-theme="{{ s.theme }}" data-size="{{ s.card_size }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#141a22">
+<title>{{ s.title }}</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/icon-192.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="stylesheet" href="/static/style.css?v={{ version }}">
+<style>:root { --accent: {{ s.accent }}; }</style>
+</head>
+<body>
+<div class="bg" id="bg" aria-hidden="true"></div>
+
+<div class="app">
+  <aside class="sidebar">
+    <a class="logo" href="/" id="logo"><span class="logo-mark" aria-hidden="true"></span><span id="title">{{ s.title }}</span></a>
+
+    <nav class="collections" aria-label="Collecties">
+      <ul id="collections"></ul>
+      <button type="button" class="add-collection edit-only" id="add-collection">+ Collectie</button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <button type="button" class="side-btn" id="btn-settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+        <span>Instellingen</span>
+      </button>
+      <button type="button" class="side-btn" id="btn-lock" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        <span id="lock-label">Ontgrendelen</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="search">
+        <svg class="search-glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <input id="q" type="search" autocomplete="off" spellcheck="false"
+               placeholder="Zoek in al je links of op het web" aria-label="Zoek in al je links of op het web"
+               aria-describedby="search-hint">
+        <kbd class="slash" aria-hidden="true">/</kbd>
+      </div>
+      <p class="clock" id="clock"><time id="time"></time><span id="date"></span></p>
+    </div>
+    <p class="search-hint" id="search-hint" aria-live="polite"></p>
+
+    <div class="col-head">
+      <h1 id="col-title"></h1>
+      <button type="button" class="mini edit-only" id="edit-collection" title="Collectie bewerken" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/></svg>
+      </button>
+      <span class="grow"></span>
+      <button type="button" class="btn primary edit-only" id="add-section" hidden>+ Sectie</button>
+    </div>
+
+    <div class="board" id="board"></div>
+  </main>
+</div>
+
+<!-- Link -->
+<dialog id="dlg-link" class="dlg">
+  <form method="dialog" id="form-link" novalidate>
+    <h2 id="dlg-link-title">Link toevoegen</h2>
+    <div class="fields">
+      <label>Naam<input name="name" required maxlength="80" placeholder="Sonarr"></label>
+      <label>Adres<input name="url" required placeholder="http://192.168.1.10:8989" inputmode="url"></label>
+      <label class="wide">Omschrijving <span class="opt">(optioneel)</span><input name="description" maxlength="200" placeholder="Series"></label>
+      <div class="wide icon-field">
+        <label>Icoon <span class="opt">(optioneel)</span><input name="icon" placeholder="leeg = favicon van de site" maxlength="500"></label>
+        <label class="btn file-btn" title="Eigen icoon uploaden (PNG, SVG, ICO, JPG, WebP)">Uploaden<input type="file" accept="image/*,.ico,.svg" id="icon-file" hidden></label>
+        <div class="icon-preview" id="icon-preview" aria-hidden="true"></div>
+      </div>
+      <p class="help wide">Leeg laten pakt het icoon van de site zelf. Typ de naam van een app (<code>sonarr</code>, <code>plex</code>, <code>home-assistant</code>) voor een icoon uit dashboard-icons of selfh.st, plak een afbeeldingsadres, upload een eigen bestand of gebruik een emoji.</p>
+      <label>Sectie<select name="section_id"></select></label>
+      <label class="check"><input type="checkbox" name="check_enabled" checked> Bereikbaarheid controleren</label>
+      <details class="wide">
+        <summary>Ander adres voor de controle</summary>
+        <label>Controle-adres<input name="check_url" placeholder="http://sonarr:8989"></label>
+        <p class="help">Handig als de link via je domein loopt, maar Linker de dienst intern sneller bereikt (bv. via de containernaam).</p>
+      </details>
+    </div>
+    <p class="form-error" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="btn danger" data-act="delete" hidden>Verwijderen</button>
+      <span class="grow"></span>
+      <button type="button" class="btn" data-act="cancel">Annuleren</button>
+      <button type="submit" class="btn primary">Opslaan</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Collectie of sectie: naam (+ icoon / collectie) -->
+<dialog id="dlg-name" class="dlg narrow">
+  <form method="dialog" id="form-name" novalidate>
+    <h2 id="dlg-name-title"></h2>
+    <div class="fields single">
+      <label>Naam<input name="name" required maxlength="80"></label>
+      <label id="name-icon-row">Icoon <span class="opt">(optioneel, bv. een emoji)</span><input name="icon" maxlength="500" placeholder="🎬"></label>
+      <label id="name-collection-row">Collectie<select name="collection_id"></select></label>
+    </div>
+    <p class="form-error" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="btn danger" data-act="delete" hidden>Verwijderen</button>
+      <span class="grow"></span>
+      <button type="button" class="btn" data-act="cancel">Annuleren</button>
+      <button type="submit" class="btn primary">Opslaan</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Ontgrendelen -->
+<dialog id="dlg-unlock" class="dlg narrow">
+  <form method="dialog" id="form-unlock" novalidate>
+    <h2>Bewerken ontgrendelen</h2>
+    <label>Wachtwoord<input name="password" type="password" required autocomplete="current-password"></label>
+    <p class="form-error" role="alert"></p>
+    <div class="actions">
+      <span class="grow"></span>
+      <button type="button" class="btn" data-act="cancel">Annuleren</button>
+      <button type="submit" class="btn primary">Ontgrendelen</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Instellingen -->
+<dialog id="dlg-settings" class="dlg">
+  <form method="dialog" id="form-settings" novalidate>
+    <h2>Instellingen</h2>
+
+    <fieldset>
+      <legend>Weergave</legend>
+      <div class="fields">
+        <label>Titel<input name="title" maxlength="60"></label>
+        <label>Kaarten<select name="card_size"><option value="normal">Normaal</option><option value="compact">Compact</option></select></label>
+        <label class="check"><input type="checkbox" name="show_subtitle"> Omschrijving of adres onder de naam</label>
+        <label class="check"><input type="checkbox" name="show_clock"> Klok en datum tonen</label>
+        <label class="check wide"><input type="checkbox" name="new_tab"> Links openen in een nieuw tabblad</label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Thema</legend>
+      <div class="fields">
+        <label>Thema<select name="theme"><option value="auto">Volgt je apparaat</option><option value="dark">Donker</option><option value="light">Licht</option><option value="oled">OLED (zwart)</option></select></label>
+        <label>Accentkleur<span class="color-row"><input name="accent" type="color"><span class="swatches" id="swatches"></span></span></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Achtergrond</legend>
+      <p class="help">Een eigen afbeelding achter de pagina (JPG, PNG, GIF of WebP, max. 8 MB).</p>
+      <div class="row">
+        <label class="btn file-btn">Afbeelding kiezen<input type="file" accept="image/png,image/jpeg,image/gif,image/webp" id="bg-file" hidden></label>
+        <button type="button" class="btn" id="bg-remove" hidden>Verwijderen</button>
+        <label class="check inline" id="bg-dim-row"><input type="checkbox" name="background_dim"> Donkerder maken voor leesbaarheid</label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Zoeken</legend>
+      <div class="fields">
+        <label>Zoekmachine<select name="search_engine"></select></label>
+        <label id="custom-engine">Zoekadres<input name="search_custom" placeholder="https://zoek.voorbeeld.nl/?q={q}"></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Bereikbaarheid</legend>
+      <div class="fields">
+        <label>Controleren elke<select name="check_interval">
+          <option value="0">Niet controleren</option><option value="30">30 seconden</option>
+          <option value="60">minuut</option><option value="300">5 minuten</option><option value="900">15 minuten</option>
+        </select></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Bewerken beveiligen</legend>
+      <p class="help" id="pw-state"></p>
+      <div class="fields">
+        <label>Nieuw wachtwoord<input name="new_password" type="password" autocomplete="new-password"></label>
+        <label class="check" id="pw-remove"><input type="checkbox" name="remove_password"> Wachtwoord verwijderen</label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Importeren en back-up</legend>
+      <p class="help">Importeer een Linker- of ctrlTAB-back-up, een Linkwarden-export of de bladwijzers uit je browser (HTML-export uit Chrome, Firefox, Edge of Safari). Een back-up bevat je links en instellingen, maar niet je wachtwoord of achtergrond.</p>
+      <div class="row">
+        <label class="btn file-btn">Bestand importeren<input type="file" accept=".json,.html,.htm,application/json,text/html" id="import-file" hidden></label>
+        <a class="btn" href="/api/export" id="btn-export">Back-up downloaden</a>
+      </div>
+    </fieldset>
+
+    <p class="form-error" role="alert"></p>
+    <div class="actions">
+      <span class="muted small">Linker {{ version }}</span>
+      <span class="grow"></span>
+      <button type="button" class="btn" data-act="cancel">Annuleren</button>
+      <button type="submit" class="btn primary">Opslaan</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script type="application/json" id="initial-state">{{ state_json | safe }}</script>
+<script src="/static/app.js?v={{ version }}"></script>
+</body>
+</html>
