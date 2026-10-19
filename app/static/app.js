@@ -147,11 +147,11 @@ function render() {
 function renderSidebar() {
   $("#collections").innerHTML = cols().map((c, i) => {
     const n = c.sections.reduce((sum, s) => sum + s.links.length, 0);
-    const icon = c.icon ? esc(c.icon) : "";
+    const icon = state.settings.show_category_icons === "1" && c.icon ? esc(c.icon) : "";
     return `<li class="col-item" data-cid="${c.id}">
       <button type="button" class="col-btn" data-open="${c.id}" aria-current="${c.id === currentId}"
         title="${esc(c.name)}${i < 9 ? ` (Alt+${i + 1})` : ""}">
-        <span class="col-icon${icon ? "" : " dot-icon"}" aria-hidden="true">${icon}</span>
+        ${icon ? `<span class="col-icon" aria-hidden="true">${icon}</span>` : ""}
         <span class="col-name">${esc(c.name)}</span>
         <span class="col-down" data-col-down="${c.id}" hidden></span>
         <span class="col-count">${n || ""}</span>
@@ -687,7 +687,7 @@ async function openName(kind, id) {
   formName.name.value = item?.name || "";
   formName.name.placeholder = isCol ? "Hobby" : "Tools";
   formName.icon.value = isCol ? item?.icon || "" : "";
-  $("#name-icon-row").hidden = !isCol;
+  $("#name-icon-row").hidden = !isCol || state.settings.show_category_icons !== "1";
   $("#name-collection-row").hidden = isCol || !item;
   formName.collection_id.innerHTML = cols().map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
   formName.collection_id.value = String(item?.collection_id || currentId);
@@ -789,6 +789,7 @@ function fillSettings() {
   formSettings.title.value = s.title;
   formSettings.card_size.value = s.card_size;
   formSettings.show_subtitle.checked = s.show_subtitle === "1";
+  formSettings.show_category_icons.checked = s.show_category_icons === "1";
   formSettings.show_clock.checked = s.show_clock === "1";
   formSettings.new_tab.checked = s.new_tab === "1";
   formSettings.theme.value = s.theme;
@@ -829,6 +830,7 @@ formSettings.addEventListener("submit", async e => {
     title: formSettings.title.value,
     card_size: formSettings.card_size.value,
     show_subtitle: formSettings.show_subtitle.checked,
+    show_category_icons: formSettings.show_category_icons.checked,
     show_clock: formSettings.show_clock.checked,
     new_tab: formSettings.new_tab.checked,
     theme: formSettings.theme.value,

@@ -18,6 +18,7 @@ DEFAULT_SETTINGS = {
     "accent": "#3b7ddd",      # zelfde blauw als het logo
     "show_clock": "1",
     "show_subtitle": "1",     # omschrijving of adres onder de naam
+    "show_category_icons": "0",  # icoon/emoji voor de categorieën in de zijbalk
     "card_size": "normal",    # compact | normal
     "check_interval": "60",   # seconden, 0 = uit
     "background": "",         # bestandsnaam in uploads/

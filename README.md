@@ -22,7 +22,7 @@ Alles draait in één container met SQLite. De pagina laadt geen scripts, fonts 
 - **Iconen** zonder gedoe: automatisch het icoon van de site (ook voor diensten in je thuisnetwerk), of een appnaam zoals `outlook` of `plex` uit [dashboard-icons](https://github.com/homarr-labs/dashboard-icons) / [selfh.st/icons](https://github.com/selfhst/icons), een eigen upload, een afbeeldingsadres of een emoji. Iconen worden in `/config` bewaard.
 - **Online-controle** (optioneel per snelkoppeling): een groen of rood bolletje, ook op de categorie in de zijbalk. Zet je aan met het vinkje bij het toevoegen; standaard staat het uit.
 - **Zijbalk op maat**: sleep de rechterrand om hem breder of smaller te maken; dubbelklik zet hem terug.
-- **Uiterlijk**: licht, donker, OLED of automatisch, een eigen accentkleur, normale of compacte kaarten, en een eigen achtergrondafbeelding.
+- **Uiterlijk**: optioneel iconen bij de categorieën; licht, donker, OLED of automatisch, een eigen accentkleur, normale of compacte kaarten, en een eigen achtergrondafbeelding.
 - **Importeren** van de bladwijzers uit je browser (HTML-export uit Chrome, Firefox, Edge of Safari; elke map wordt een sectie), een ctrlTAB-back-up of een Linkwarden-export.
 - **Back-up** downloaden en terugzetten als JSON.
 - **Bewerken beveiligen** met een optioneel wachtwoord. Openen en zoeken blijft voor iedereen mogelijk; alleen wijzigen vraagt om het wachtwoord.
@@ -86,8 +86,8 @@ Open daarna http://localhost:5656.
 
 Alle wijzigingen per versie staan in [CHANGELOG.md](CHANGELOG.md) en onder [Releases](https://github.com/RichrdJ/linker/releases). Het versienummer van je installatie staat onderaan *Instellingen*.
 
-- `:latest` volgt `main`, `:0.3.0` is een vaste versie.
-- Wil je zelf bepalen wanneer je updatet? Zet dan een vast versienummer in `portainer-stack.yml`, bijvoorbeeld `:0.3.0`.
+- `:latest` volgt `main`, `:0.3.1` is een vaste versie.
+- Wil je zelf bepalen wanneer je updatet? Zet dan een vast versienummer in `portainer-stack.yml`, bijvoorbeeld `:0.3.1`.
 
 **Nieuwe versie uitbrengen:** werk `CHANGELOG.md` en `app/VERSION` bij, commit, en push met een tag:
 

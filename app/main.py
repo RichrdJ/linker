@@ -156,6 +156,7 @@ class SettingsIn(BaseModel):
     accent: str | None = None
     show_clock: bool | None = None
     show_subtitle: bool | None = None
+    show_category_icons: bool | None = None
     card_size: str | None = None
     background_dim: bool | None = None
     check_interval: int | None = Field(default=None, ge=0, le=86400)
@@ -496,7 +497,7 @@ def save_settings(request: Request, body: SettingsIn):
         if body.card_size not in CARD_SIZES:
             raise HTTPException(422, "Onbekende kaartgrootte.")
         values["card_size"] = body.card_size
-    for key in ("new_tab", "show_clock", "show_subtitle", "background_dim"):
+    for key in ("new_tab", "show_clock", "show_subtitle", "show_category_icons", "background_dim"):
         v = getattr(body, key)
         if v is not None:
             values[key] = "1" if v else "0"

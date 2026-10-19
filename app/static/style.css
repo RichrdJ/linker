@@ -71,7 +71,6 @@ button, input, select { font: inherit; color: inherit; }
 .col-btn:hover { background: var(--surface); color: var(--fg); }
 .col-btn[aria-current="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
 .col-icon { width: 20px; text-align: center; flex: none; font-size: 15px; }
-.col-icon.dot-icon::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .55; }
 .col-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .col-count { font-size: 12px; opacity: .7; font-variant-numeric: tabular-nums; }
 .col-down { width: 7px; height: 7px; border-radius: 50%; background: var(--down); flex: none; }
