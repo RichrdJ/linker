@@ -4,7 +4,10 @@ Een lichte, zelf-gehoste verzamelplek voor je snelkoppelingen. Verdeel ze over *
 
 Alles draait in één container met SQLite. De pagina laadt geen scripts, fonts of trackers van buitenaf, dus hij werkt ook zonder internet. Alle instellingen doe je in de app zelf; in Portainer hoef je niets in te vullen.
 
-![Startpagina](docs/images/startpagina-dark.png)
+<picture>
+  <source media="(prefers-color-scheme: light)" srcset="docs/images/startpagina-light.png">
+  <img alt="Startpagina van Linker met categorieën, secties en het weer in de zijbalk" src="docs/images/startpagina-dark.png">
+</picture>
 
 ## Functies
 
@@ -14,25 +17,32 @@ Alles draait in één container met SQLite. De pagina laadt geen scripts, fonts 
   - **plak** een adres met `Ctrl`+`V` ergens op de pagina;
   - **sleep** een link of het adres uit een ander tabblad op de pagina (of op een sectie);
   - de **bladwijzer-knop "+ Naar Linker"** (te vinden in *Instellingen*): sleep hem naar je bladwijzerbalk en bewaar elke website met één klik. Na het opslaan ga je terug naar de pagina.
-- **Ordenen**: sleep snelkoppelingen, secties en categorieën om de volgorde te wijzigen. Laat een snelkoppeling of sectie op een categorie in de zijbalk vallen om hem te verplaatsen. Een sectie sorteer je met één klik van A tot Z.
-- **Zoeken met het toetsenbord**: begin gewoon met typen of druk op `/` (of klik op *Zoeken* in de zijbalk). De zoekbalk verschijnt pas dan, en verdwijnt weer met `Esc`.
+- **Ordenen**: sleep snelkoppelingen, secties en categorieën om de volgorde te wijzigen. Laat een snelkoppeling of sectie op een categorie in de zijbalk vallen om hem te verplaatsen. Een sectie sorteer je met één klik van A tot Z of op meest bezocht, of je laat Linker de meest bezochte snelkoppelingen vanzelf bovenaan zetten.
+- **Zoeken met het toetsenbord**: begin gewoon met typen of druk op `/` (op je telefoon: het vergrootglas). De zoekbalk verschijnt pas dan, en verdwijnt weer met `Esc`.
   - Doorzoekt alle categorieën tegelijk (naam, omschrijving en adres).
   - `Enter` opent de beste treffer, `↑` `↓` kiest een andere, `Esc` wist.
   - `Shift`+`Enter` zoekt op het web: DuckDuckGo, Google, Startpage, Bing, Brave, Kagi, Ecosia of een eigen zoekmachine.
 - **Iconen** zonder gedoe: automatisch het icoon van de site (ook voor diensten in je thuisnetwerk), of een appnaam zoals `outlook` of `plex` uit [dashboard-icons](https://github.com/homarr-labs/dashboard-icons) / [selfh.st/icons](https://github.com/selfhst/icons), een eigen upload, een afbeeldingsadres of een emoji. Iconen worden in `/config` bewaard.
 - **Online-controle** (optioneel per snelkoppeling): een groen of rood bolletje, ook op de categorie in de zijbalk. Zet je aan met het vinkje bij het toevoegen; standaard staat het uit.
-- **Zijbalk op maat**: sleep de rechterrand om hem breder of smaller te maken; dubbelklik zet hem terug.
+- **Zijbalk op maat**: sleep de rechterrand om hem breder of smaller te maken (dubbelklik zet hem terug), of klap hem in tot een smalle strook. Onderin staan rustig de klok, de datum en het weer.
 - **Uiterlijk**: optioneel iconen bij de categorieën; licht, donker, OLED of automatisch, een eigen accentkleur, normale of compacte kaarten, en een eigen achtergrondafbeelding.
 - **Importeren** van de bladwijzers uit je browser (HTML-export uit Chrome, Firefox, Edge of Safari; elke map wordt een sectie), een ctrlTAB-back-up of een Linkwarden-export.
 - **Back-up** downloaden en terugzetten als JSON.
 - **Beveiligen** met een wachtwoord: alleen bewerken afschermen, of met **Inloggen verplicht** de hele startpagina achter een loginpagina zetten, zodat je Linker veilig via internet kunt gebruiken.
-- **Eigen kleur per categorie**: Werk blauw, Privé groen. Het logo en het icoon in je tabblad kleuren mee.
+- **Eigen kleur per categorie**: bijvoorbeeld Thuis blauw en Werk groen. Het logo en het icoon in je tabblad kleuren mee.
 - **Weer** klein onder de klok, via [Open-Meteo](https://open-meteo.com) (gratis, geen account). Alleen de server haalt het op; je plaats staat alleen in je eigen database.
 - **Installeerbaar als app** (PWA) op telefoon en desktop.
 
-![Snelkoppeling toevoegen](docs/images/toevoegen-dark.png)
+### Zo ziet het eruit
 
-![Zoeken](docs/images/zoeken-dark.png)
+| | |
+|---|---|
+| ![Zoeken in alle categorieën tegelijk](docs/images/zoeken-dark.png) | ![Snelkoppeling toevoegen: alleen het adres, de naam komt vanzelf](docs/images/toevoegen-dark.png) |
+| **Zoeken**: begin te typen, `Enter` opent de beste treffer. | **Toevoegen**: plak een adres, de naam en het icoon komen vanzelf. |
+| ![Ingeklapte zijbalk met een eigen kleur voor de categorie Werk](docs/images/werk-ingeklapt-dark.png) | ![Loginpagina](docs/images/login-dark.png) |
+| **Ingeklapt en in kleur**: Werk in het groen, de zijbalk als smalle strook. | **Inloggen**: veilig via internet, met bescherming tegen raden. |
+
+<sub>Screenshots met verzonnen voorbeeldgegevens. Iconen uit [dashboard-icons](https://github.com/homarr-labs/dashboard-icons).</sub>
 
 ## Installeren in Portainer
 
